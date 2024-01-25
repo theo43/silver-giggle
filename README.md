@@ -1,5 +1,7 @@
 # silver-giggle
 
+[![Training](https://github.com/theo43/silver-giggle/actions/workflows/sagemaker_workflow.yml/badge.svg)](https://github.com/theo43/silver-giggle/actions/workflows/sagemaker_workflow.yml)
+
 ## Architecture
 This project aims at containing in a single mono repo everything you need to `experiment` (train and validate
 your models), and then create the Docker images you need to push these models to `production`. `packages`
