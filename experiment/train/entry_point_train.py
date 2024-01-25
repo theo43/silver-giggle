@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import os
-import time
+
 
 
 SEQ_LENGTH = 100
@@ -48,13 +48,10 @@ class ShakespeareModel(tf.keras.Model):
 
 
 if __name__ == '__main__':
-    # download data (maybe store it in an S3 instead of redownaloding it each time?)
-    path_to_file = tf.keras.utils.get_file(
-        'shakespeare.txt',
-        'https://storage.googleapis.com/download.tensorflow.org/data/shakespeare.txt'
-    )
+    
+    train_data_path = os.environ['SM_CHANNEL_TRAINING']
 
-    shakespeare_text = open(path_to_file, 'rb').read().decode(encoding='utf-8')
+    text = open(train_data_path, 'rb').read().decode(encoding='utf-8')
     vocab = sorted(set(text))
 
     # get ids from chars and reversed
@@ -67,9 +64,7 @@ if __name__ == '__main__':
     )
 
     # data preparation into sequences
-    shakespeare_ids = ids_from_chars(tf.strings.unicode_split(
-        shakespeare_text, 'UTF-8')
-    )
+    shakespeare_ids = ids_from_chars(tf.strings.unicode_split(text, 'UTF-8'))
 
     ids_dataset = tf.data.Dataset.from_tensor_slices(shakespeare_ids)
 
@@ -112,3 +107,4 @@ if __name__ == '__main__':
     EPOCHS = 3
     history = model.fit(dataset, epochs=EPOCHS, callbacks=[checkpoint_callback])
 
+    

@@ -34,4 +34,4 @@ jobs:
         run: |
           # Add your SageMaker training script/command here
           # For example:
-          # python train.py --input-data s3://your-bucket/path/to/data --output-model s3://your-bucket/path/to/model
+          python experiment/train/pipeline_train.py --s3-bucket-name ${{ secrets.AWS_S3_BUCKET_NAME }}
