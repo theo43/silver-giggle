@@ -18,15 +18,17 @@ if __name__ == '__main__':
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
 
-    local_pipeline_session = LocalPipelineSession()
+    session = LocalPipelineSession()
+    #role = sagemaker.get_execution_role()
+    role = 'sagemaker-silver-role'
 
     tensorflow_estimator = TensorFlow(
-        sagemaker_session=local_pipeline_session,
-        role=sagemaker.get_execution_role(),
+        sagemaker_session=session,
+        role=role,
         instance_type='ml.c5.xlarge',
         instance_count=1,
-        framework_version='2.15.0',
-        py_version='py311',
+        framework_version='2.13',
+        py_version='py310',
         entry_point='entry_point_train.py'
     )
 
@@ -40,13 +42,14 @@ if __name__ == '__main__':
     )
 
     pipeline = Pipeline(
-        name='Training pipeline', steps=[step],
-        sagemaker_session=local_pipeline_session
+        name='Training pipeline',
+        steps=[step],
+        sagemaker_session=session
     )
 
-    pipeline.create(
-        role_arn=sagemaker.get_execution_role(),
-        description='Local training pipeline'
+    pipeline.upsert(
+        role_arn=role,
+        description='local pipeline'
     )
 
-    pipeline.start()
+    execution = pipeline.start()

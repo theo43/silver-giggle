@@ -104,7 +104,7 @@ if __name__ == '__main__':
         filepath=checkpoint_prefix,
         save_weights_only=True)
     
-    EPOCHS = 3
+    EPOCHS = 1
     history = model.fit(dataset, epochs=EPOCHS, callbacks=[checkpoint_callback])
 
     
