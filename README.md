@@ -24,4 +24,7 @@ python -m ipykernel install --name=venv-exp
 ```
 You can then use that env in an activated Jupyter notebook.
 
-##
+## Sources
+
+This repository is inspired by the following sources:
+- [KREUZBERGER, Dominik, KÜHL, Niklas, et HIRSCHL, Sebastian. Machine learning operations (mlops): Overview, definition, and architecture. IEEE Access, 2023.](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10081336)
