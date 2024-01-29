@@ -10,7 +10,7 @@ is tested and packaged. It is then only written once at a single place to avoid 
 
 ## Experiments
 ### Requirements
-Activate a Python 3.11.0 installation, then:
+Activate a Python 3.10 installation, then:
 ```
 cd experiments
 python -m venv venv-exp
