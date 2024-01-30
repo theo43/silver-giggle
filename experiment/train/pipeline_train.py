@@ -50,7 +50,7 @@ if __name__ == '__main__':
        instance_count=instance_count,
        entry_point='entry_point_train.py',
        output_path=output_path,
-       training_repository_access_mode='Vpc'
+       training_repository_access_mode='Platform'
     )
 
     s3_train_data = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
