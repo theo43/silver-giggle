@@ -16,7 +16,7 @@ if __name__ == '__main__':
         '--s3-bucket-name', type=str, help='AWS S3 bucket name'
     )
     parser.add_argument(
-        '--aws-role', type=str, help='AWS role'
+        '--aws-role-arn', type=str, help='AWS role ARN'
     )
     parser.add_argument(
         '--image-uri', type=str, help='Training image URI'
@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
-    role = args.aws_role
+    role_arn = args.aws_role_arn
     image_uri = args.image_uri
     local = args.local
 
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     output_path = f's3://{s3_bucket_name}/models/estimator-models'
     estimator = Estimator(
        image_uri=image_uri,
-       role=role,
+       role=role_arn,
        instance_type=instance_type,
        instance_count=instance_count,
        entry_point='entry_point_train.py',
