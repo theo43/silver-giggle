@@ -33,3 +33,8 @@ docker login
 docker push <github_username>/<train_image_name>:latest
 python pipeline_train.py --s3-bucket-name <bucket_name> --role <role> --image-uri <github_username>/<train_image_name>:latest
 ```
+
+## Sources
+
+This repository is inspired by the following sources:
+- [KREUZBERGER, Dominik, KÜHL, Niklas, et HIRSCHL, Sebastian. Machine learning operations (mlops): Overview, definition, and architecture. IEEE Access, 2023.](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10081336)
