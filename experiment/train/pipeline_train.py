@@ -4,13 +4,14 @@ from sagemaker.workflow.pipeline_context import (
 from sagemaker.workflow.steps import TrainingStep
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.estimator import Estimator
+from sagemaker import get_execution_role
 import argparse
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-        description='Text generation model training'
+        description='Text generation model training parser'
     )
     parser.add_argument(
         '--s3-bucket-name', type=str, help='AWS S3 bucket name'
@@ -41,6 +42,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
     role_arn = args.aws_role_arn
+    role = get_execution_role()
     image_uri = args.image_uri
     local = args.local
 
@@ -58,7 +60,7 @@ if __name__ == '__main__':
     output_path = f's3://{s3_bucket_name}/models/estimator-models'
     estimator = Estimator(
        image_uri=image_uri,
-       role=role_arn,
+       role=role,
        instance_type=instance_type,
        instance_count=instance_count,
        entry_point='entry_point_train.py',
