@@ -12,15 +12,15 @@ is tested and packaged. It is then only written once at a single place to avoid 
 ### Requirements
 Activate a Python 3.11 installation, then:
 ```
-cd experiments
-python -m venv venv-exp
-source ./venv-exp/bin/activate
-pip install -r requirements-exp.txt
+cd experiment/notebooks
+python -m venv venv-jup
+source ./venv-jup/bin/activate
+pip install -r requirements.txt
 ```
 
-To link your venv to a Jupyter notebook kernel, run with your activated `venv-exp`:
+To link your venv to a Jupyter notebook kernel, run with your activated `venv-jup`:
 ```
-python -m ipykernel install --user --name=venv-exp
+python -m ipykernel install --user --name=venv-jup
 ```
 You can then use that env in an activated Jupyter notebook.
 
