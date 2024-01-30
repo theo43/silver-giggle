@@ -63,11 +63,11 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd experiment/train
           pip install sagemaker==2.204.0
 
       - name: SageMaker Training
         run: |
+          cd experiment/train
           python pipeline_train.py \
           --s3-bucket-name ${{ secrets.AWS_S3_BUCKET_NAME }} \
           --aws-role ${{ secrets.AWS_ROLE }} \
