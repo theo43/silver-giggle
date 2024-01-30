@@ -1,0 +1,2 @@
+sagemaker==2.204.0
+mlflow==2.10.0

@@ -10,7 +10,7 @@ is tested and packaged. It is then only written once at a single place to avoid 
 
 ## Experiments
 ### Requirements
-Activate a Python 3.11.0 installation, then:
+Activate a Python 3.11 installation, then:
 ```
 cd experiments
 python -m venv venv-exp
@@ -20,9 +20,19 @@ pip install -r requirements-exp.txt
 
 To link your venv to a Jupyter notebook kernel, run with your activated `venv-exp`:
 ```
-python -m ipykernel install --name=venv-exp
+python -m ipykernel install --user --name=venv-exp
 ```
 You can then use that env in an activated Jupyter notebook.
+
+## Local Sagemaker training
+```
+cd experiment/train
+docker build -t <train_image_name> .
+docker tag <train_image_name> <github_username>/<train_image_name>:latest
+docker login
+docker push <github_username>/<train_image_name>:latest
+python pipeline_train.py --s3-bucket-name <bucket_name> --role <role> --image-uri <github_username>/<train_image_name>:latest
+```
 
 ## Sources
 

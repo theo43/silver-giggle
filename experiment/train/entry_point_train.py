@@ -1,7 +1,6 @@
 import tensorflow as tf
-import numpy as np
 import os
-import time
+import argparse
 
 
 SEQ_LENGTH = 100
@@ -23,38 +22,39 @@ def split_input_target(sequence):
 
 
 class ShakespeareModel(tf.keras.Model):
-  def __init__(self, vocab_size, embedding_dim, rnn_units):
-    super().__init__(self)
-    self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim)
-    self.gru = tf.keras.layers.GRU(
-       rnn_units,
-       return_sequences=True,
-       return_state=True
-    )
-    self.dense = tf.keras.layers.Dense(vocab_size)
+    def __init__(self, vocab_size, embedding_dim, rnn_units):
+        super().__init__(self)
+        self.embedding = tf.keras.layers.Embedding(vocab_size, embedding_dim)
+        self.gru = tf.keras.layers.GRU(
+          rnn_units,
+          return_sequences=True,
+          return_state=True
+        )
+        self.dense = tf.keras.layers.Dense(vocab_size)
 
-  def call(self, inputs, states=None, return_state=False, training=False):
-    x = inputs
-    x = self.embedding(x, training=training)
-    if states is None:
-      states = self.gru.get_initial_state(x)
-    x, states = self.gru(x, initial_state=states, training=training)
-    x = self.dense(x, training=training)
+    def call(self, inputs, states=None, return_state=False, training=False):
+        x = inputs
+        x = self.embedding(x, training=training)
+        if states is None:
+          states = self.gru.get_initial_state(x)
+        x, states = self.gru(x, initial_state=states, training=training)
+        x = self.dense(x, training=training)
 
-    if return_state:
-      return x, states
-    else:
-      return x
+        if return_state:
+          return x, states
+        else:
+          return x
 
 
 if __name__ == '__main__':
-    # download data (maybe store it in an S3 instead of redownaloding it each time?)
-    path_to_file = tf.keras.utils.get_file(
-        'shakespeare.txt',
-        'https://storage.googleapis.com/download.tensorflow.org/data/shakespeare.txt'
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+      '--train-data', type=str,
+      default=os.environ['SM_CHANNEL_TRAINING']
     )
+    args = parser.parse_args()
 
-    shakespeare_text = open(path_to_file, 'rb').read().decode(encoding='utf-8')
+    text = open(args.train_data, 'rb').read().decode(encoding='utf-8')
     vocab = sorted(set(text))
 
     # get ids from chars and reversed
@@ -67,8 +67,8 @@ if __name__ == '__main__':
     )
 
     # data preparation into sequences
-    shakespeare_ids = ids_from_chars(tf.strings.unicode_split(
-        shakespeare_text, 'UTF-8')
+    shakespeare_ids = ids_from_chars(
+        tf.strings.unicode_split(text, 'UTF-8')
     )
 
     ids_dataset = tf.data.Dataset.from_tensor_slices(shakespeare_ids)
@@ -92,9 +92,9 @@ if __name__ == '__main__':
     rnn_units = 1024
 
     model = ShakespeareModel(
-       vocab_size=vocab_size,
-       embedding_dim=embedding_dim,
-       rnn_units=rnn_units
+      vocab_size=vocab_size,
+      embedding_dim=embedding_dim,
+      rnn_units=rnn_units
     )
 
     loss = tf.losses.SparseCategoricalCrossentropy(from_logits=True)
@@ -107,8 +107,12 @@ if __name__ == '__main__':
 
     checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=checkpoint_prefix,
-        save_weights_only=True)
+        save_weights_only=True
+    )
     
-    EPOCHS = 3
-    history = model.fit(dataset, epochs=EPOCHS, callbacks=[checkpoint_callback])
-
+    EPOCHS = 5
+    history = model.fit(
+        dataset,
+        epochs=EPOCHS,
+        callbacks=[checkpoint_callback]
+    )
