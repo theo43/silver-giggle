@@ -5,11 +5,14 @@ FROM tensorflow/tensorflow:2.15.0
 WORKDIR /opt/ml/code
 
 # Install Python dependencies
-COPY ./requirements-exp.txt .
-RUN pip install --no-cache-dir -r ./requirements-exp.txt
+RUN pip3 install sagemaker-training
+COPY ./requirements-train.txt .
+RUN pip3 install --no-cache-dir -r ./requirements-train.txt
 
-# Copy training script
-COPY entry_point_train.py .
+ENV MLFLOW_TRACKING_URI=to_be_replaced_by_ci_cd
 
-# Set the entry point to your training script
-ENTRYPOINT ["python3", "entry_point_train.py"]
+# # Copy training script
+# COPY entry_point_train.py .
+
+# # Set the entry point to your training script
+# ENV SAGEMAKER_PROGRAM entry_point.py
