@@ -25,12 +25,25 @@ if __name__ == '__main__':
         '--local', type=bool, default=False,
         help='Local mode execution'
     )
+    parser.add_argument(
+        '--subnet-id1', type=str, help='Subnet id1'
+    )
+    parser.add_argument(
+        '--subnet-id2', type=str, help='Subnet id2'
+    )
+    parser.add_argument(
+        '--subnet-id3', type=str, help='Subnet id3'
+    )
+    parser.add_argument(
+        '--security-group-id', type=str, help='Security group id'
+    )
 
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
     role = args.aws_role
     image_uri = args.image_uri
     local = args.local
+
 
     if local:
         session = LocalPipelineSession()
@@ -50,7 +63,11 @@ if __name__ == '__main__':
        instance_count=instance_count,
        entry_point='entry_point_train.py',
        output_path=output_path,
-       training_repository_access_mode='Platform'
+       training_repository_access_mode='Vpc',
+       subnets=[
+           args.subnet_id1, args.subnet_id2, args.subnet_id3
+       ],
+       security_group_ids=[args.security_group_id]
     )
 
     s3_train_data = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
