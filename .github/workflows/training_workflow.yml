@@ -1,4 +1,4 @@
-name: SageMaker Training Workflow
+name: Training Workflow
 
 on:
   workflow_dispatch:
