@@ -49,7 +49,8 @@ if __name__ == '__main__':
        instance_type=instance_type,
        instance_count=instance_count,
        entry_point='entry_point_train.py',
-       output_path=output_path
+       output_path=output_path,
+       training_repository_access_mode='Vpc'
     )
 
     s3_train_data = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
@@ -69,7 +70,7 @@ if __name__ == '__main__':
 
     pipeline.upsert(
         role_arn=role,
-        description='local pipeline'
+        description='Shakespeare training pipeline'
     )
 
     execution = pipeline.start()

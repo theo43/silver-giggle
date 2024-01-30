@@ -71,4 +71,4 @@ jobs:
           python pipeline_train.py \
           --s3-bucket-name ${{ secrets.AWS_S3_BUCKET_NAME }} \
           --aws-role ${{ secrets.AWS_ROLE }} \
-          --image-uri ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.TRAIN_IMAGE_NAME }}:${{ github.sha }}
+          --image-uri docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.TRAIN_IMAGE_NAME }}:${{ github.sha }}
