@@ -112,7 +112,7 @@ if __name__ == '__main__':
             filepath=checkpoint_prefix,
             save_weights_only=True)
         
-        EPOCHS = 1
+        EPOCHS = 15
         history = model.fit(
             dataset,
             epochs=EPOCHS,
