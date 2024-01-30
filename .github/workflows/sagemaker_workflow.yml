@@ -13,10 +13,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       
-      - name: Set MLFLOW_TRACKING_URI environment variable in Dockerfile
-        run: |
-          sed -i 's|ENV MLFLOW_TRACKING_URI=.*|ENV MLFLOW_TRACKING_URI=s3://${{ secrets.AWS_S3_BUCKET_NAME}}/models/mlflow-runs|' \
-          ./experiment/train/Dockerfile
+      #- name: Set MLFLOW_TRACKING_URI environment variable in Dockerfile
+      #  run: |
+      #    sed -i 's|ENV MLFLOW_TRACKING_URI=.*|ENV MLFLOW_TRACKING_URI=s3://${{ secrets.AWS_S3_BUCKET_NAME}}/models/mlflow-runs|' \
+      #    ./experiment/train/Dockerfile
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -62,12 +62,12 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd experiment
+          cd experiment/train
           pip install sagemaker==2.204.0
 
       - name: SageMaker Training
         run: |
-          python experiment/train/pipeline_train.py \
+          python pipeline_train.py \
           --s3-bucket-name ${{ secrets.AWS_S3_BUCKET_NAME }} \
           --aws-role ${{ secrets.AWS_ROLE }} \
           --image-uri ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.TRAIN_IMAGE_NAME }}:${{ github.sha }}

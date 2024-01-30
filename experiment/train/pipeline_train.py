@@ -40,14 +40,16 @@ if __name__ == '__main__':
     else:
         session = PipelineSession()
         instance_count = 1
-        instance_type = 'ml.m5.xlarge'
+        instance_type = 'ml.m5.large'
 
+    output_path = f's3://{s3_bucket_name}/models/estimator-models'
     estimator = Estimator(
        image_uri=image_uri,
        role=role,
        instance_type=instance_type,
        instance_count=instance_count,
-       entry_point='entry_point_train.py'
+       entry_point='entry_point_train.py',
+       output_path=output_path
     )
 
     s3_train_data = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
