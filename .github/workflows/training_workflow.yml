@@ -56,16 +56,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          role-session-name: GithubActionsName
+          role-session-name: GithubActionsRoleSession
       
-      # - name: Assume AWS role
-      #   run: |
-      #     ROLE_OUTPUT=$(aws sts assume-role --role-arn ${{ secrets.AWS_ROLE_ARN }} --role-session-name GitHubActions)
-
-      #     export AWS_ACCESS_KEY_ID=$(echo $ROLE_OUTPUT | jq -r .Credentials.AccessKeyId)
-      #     export AWS_SECRET_ACCESS_KEY=$(echo $ROLE_OUTPUT | jq -r .Credentials.SecretAccessKey)
-      #     export AWS_SESSION_TOKEN=$(echo $ROLE_OUTPUT | jq -r .Credentials.SessionToken)
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
