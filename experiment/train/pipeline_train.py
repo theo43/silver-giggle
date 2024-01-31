@@ -17,9 +17,6 @@ if __name__ == '__main__':
         '--s3-bucket-name', type=str, help='AWS S3 bucket name'
     )
     parser.add_argument(
-        '--aws-role-arn', type=str, help='AWS role ARN'
-    )
-    parser.add_argument(
         '--image-uri', type=str, help='Training image URI'
     )
     parser.add_argument(
@@ -41,7 +38,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
-    role_arn = args.aws_role_arn
     role = get_execution_role()
     image_uri = args.image_uri
     local = args.local
