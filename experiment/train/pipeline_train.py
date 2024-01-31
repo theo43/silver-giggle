@@ -9,7 +9,6 @@ import argparse
 
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser(
         description='Text generation model training parser'
     )
@@ -59,6 +58,7 @@ if __name__ == '__main__':
        role=role,
        instance_type=instance_type,
        instance_count=instance_count,
+       source_dir='src',
        entry_point='entry_point_train.py',
        output_path=output_path,
        training_repository_access_mode='Vpc',

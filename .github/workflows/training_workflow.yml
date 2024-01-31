@@ -77,4 +77,3 @@ jobs:
           --subnet-id2 ${{ secrets.AWS_SUBNET_ID2 }} \
           --subnet-id3 ${{ secrets.AWS_SUBNET_ID3 }} \
           --security-group-id ${{ secrets.AWS_SECURITY_GROUP_ID }}
-          
