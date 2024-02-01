@@ -4,7 +4,7 @@ from sagemaker.workflow.pipeline_context import (
 from sagemaker.workflow.steps import TrainingStep
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.estimator import Estimator
-from sagemaker.tensorflow import Tensorflow
+from sagemaker.tensorflow import TensorFlow
 from sagemaker import get_execution_role
 import argparse
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
     #    ],
     #    security_group_ids=[args.security_group_id]
     # )
-    estimator = Tensorflow(
+    estimator = TensorFlow(
         py_version='py310',
         framework_version='2.13',
         role=role,
