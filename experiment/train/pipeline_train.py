@@ -72,6 +72,8 @@ if __name__ == '__main__':
         py_version='py310',
         framework_version='2.13',
         role=role,
+        instance_type=instance_type,
+        instance_count=instance_count,
         source_dir='src',
         entry_point='entry_point_train.py',
         model_dir=output_path
