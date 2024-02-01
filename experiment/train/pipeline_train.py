@@ -4,7 +4,7 @@ from sagemaker.workflow.pipeline_context import (
 from sagemaker.workflow.steps import TrainingStep
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.estimator import Estimator
-from sagemaker.tensorflow.estimator import Tensorflow
+from sagemaker.tensorflow import Tensorflow
 from sagemaker import get_execution_role
 import argparse
 
