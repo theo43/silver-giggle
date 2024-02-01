@@ -4,6 +4,7 @@ from sagemaker.workflow.pipeline_context import (
 from sagemaker.workflow.steps import TrainingStep
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.estimator import Estimator
+from sagemaker.tensorflow.estimator import Tensorflow
 from sagemaker import get_execution_role
 import argparse
 
@@ -53,19 +54,27 @@ if __name__ == '__main__':
         instance_type = 'ml.m5.large'
 
     output_path = f's3://{s3_bucket_name}/models/estimator-models'
-    estimator = Estimator(
-       image_uri=image_uri,
-       role=role,
-       instance_type=instance_type,
-       instance_count=instance_count,
-       source_dir='src',
-       entry_point='entry_point_train.py',
-       output_path=output_path,
-       training_repository_access_mode='Vpc',
-       subnets=[
-           args.subnet_id1, args.subnet_id2, args.subnet_id3
-       ],
-       security_group_ids=[args.security_group_id]
+    # estimator = Estimator(
+    #    image_uri=image_uri,
+    #    role=role,
+    #    instance_type=instance_type,
+    #    instance_count=instance_count,
+    #    source_dir='src',
+    #    entry_point='entry_point_train.py',
+    #    output_path=output_path,
+    #    training_repository_access_mode='Vpc',
+    #    subnets=[
+    #        args.subnet_id1, args.subnet_id2, args.subnet_id3
+    #    ],
+    #    security_group_ids=[args.security_group_id]
+    # )
+    estimator = Tensorflow(
+        py_version='py310',
+        framework_version='2.13',
+        role=role,
+        source_dir='src',
+        entry_point='entry_point_train.py',
+        model_dir=output_path
     )
 
     s3_train_data = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
