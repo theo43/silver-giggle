@@ -17,7 +17,7 @@ if __name__ == '__main__':
         default=os.environ['SM_CHANNEL_TRAINING']
     )
     parser.add_argument(
-        '--model-dir', type=str,
+        '--model_dir', type=str,
         default=os.environ['SM_MODEL_DIR']
     )
     args = parser.parse_args()
