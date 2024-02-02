@@ -13,7 +13,7 @@ BUFFER_SIZE = 10000
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--train-data', type=str,
+        '--train', type=str,
         default=os.environ['SM_CHANNEL_TRAIN']
     )
     parser.add_argument(

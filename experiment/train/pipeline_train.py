@@ -84,7 +84,7 @@ if __name__ == '__main__':
     step = TrainingStep(
         name="Shakespeare training step",
         step_args=estimator.fit({
-            'training': s3_train_data
+            'train': s3_train_data
         })
     )
 
