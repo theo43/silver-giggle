@@ -1,5 +1,7 @@
 import tensorflow as tf
+from pathlib import Path
 import os
+import logging
 import argparse
 from shakespeare_model import (
     split_input_target, ShakespeareModel
@@ -11,6 +13,7 @@ BUFFER_SIZE = 10000
 
 
 if __name__ == '__main__':
+    logger = logging.getLogger(__name__)
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--train', type=str,
@@ -22,8 +25,13 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
     train_data_path = args.train
+    logger.info('LOG WHAT IS INSIDE ARGS.TRAIN')
+    for i in Path(args.train).iterdir():
+        logger.info(i)
+
+    train_data_path = str(Path(train_data_path) / 'shakespeare.txt')
     
-    text = open(args.train, 'rb').read().decode(
+    text = open(train_data_path, 'rb').read().decode(
         encoding='utf-8'
     )
     vocab = sorted(set(text))
