@@ -9,8 +9,7 @@ import boto3
 from botocore.exceptions import NoCredentialsError
 
 
-# SEQ_LENGTH = 100
-SEQ_LENGTH = 10
+SEQ_LENGTH = 100
 BATCH_SIZE = 64
 BUFFER_SIZE = 10000
 
@@ -32,6 +31,9 @@ if __name__ == '__main__':
     text = open(train_data_path, 'rb').read().decode(
         encoding='utf-8'
     )
+
+    # Reduce data amount for smoke training
+    text = text[:10000]
     vocab = sorted(set(text))
 
     # Get ids from chars and reversed
@@ -104,7 +106,7 @@ if __name__ == '__main__':
     # model_path = str(
     #     Path(args.model_dir) / 'model.keras'
     # )
-    model.save('./model', save_format='tf')
+    model.save('./model.keras', save_format='tf')
 
     # Set up S3 client (No need to pass access_key_id and secret_access_key when running on AWS services with IAM role)
     s3_client = boto3.client('s3')
@@ -114,6 +116,6 @@ if __name__ == '__main__':
     key = '/'.join(key_list)
     # Upload the model to S3
     try:
-        s3_client.upload_file('./model', bucket_name, key)
+        s3_client.upload_file('./model.keras', bucket_name, key)
     except NoCredentialsError:
         print("Credentials not available")
