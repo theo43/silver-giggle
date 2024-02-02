@@ -6,7 +6,8 @@ from shakespeare_model import (
     split_input_target, ShakespeareModel
 )
 
-SEQ_LENGTH = 100
+# SEQ_LENGTH = 100
+SEQ_LENGTH = 10
 BATCH_SIZE = 64
 BUFFER_SIZE = 10000
 
