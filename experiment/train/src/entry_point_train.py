@@ -22,7 +22,7 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    text = open(args.train_data, 'rb').read().decode(
+    text = open(args.train, 'rb').read().decode(
         encoding='utf-8'
     )
     vocab = sorted(set(text))
