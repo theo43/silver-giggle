@@ -5,6 +5,9 @@ import argparse
 from shakespeare_model import (
     split_input_target, ShakespeareModel
 )
+import boto3
+from botocore.exceptions import NoCredentialsError
+
 
 # SEQ_LENGTH = 100
 SEQ_LENGTH = 10
@@ -101,4 +104,16 @@ if __name__ == '__main__':
     # model_path = str(
     #     Path(args.model_dir) / 'model.keras'
     # )
-    model.save(args.model_dir)
+    model.save('./model', save_format='tf')
+
+    # Set up S3 client (No need to pass access_key_id and secret_access_key when running on AWS services with IAM role)
+    s3_client = boto3.client('s3')
+
+    bucket_name = args.model_dir.split('://')[1].split('/')[0]
+    key_list = args.model_dir.split('://')[1].split('/')[:1]
+    key = '/'.join(key_list)
+    # Upload the model to S3
+    try:
+        s3_client.upload_file('./model', bucket_name, key)
+    except NoCredentialsError:
+        print("Credentials not available")
