@@ -76,7 +76,7 @@ if __name__ == '__main__':
         instance_count=instance_count,
         source_dir='src',
         entry_point='entry_point_train.py',
-        model_dir=output_path
+        output_path=output_path
     )
 
     s3_train_data = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
