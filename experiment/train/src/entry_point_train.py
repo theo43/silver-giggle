@@ -1,7 +1,6 @@
 import tensorflow as tf
 from pathlib import Path
 import os
-import logging
 import argparse
 from shakespeare_model import (
     split_input_target, ShakespeareModel
@@ -13,7 +12,6 @@ BUFFER_SIZE = 10000
 
 
 if __name__ == '__main__':
-    logger = logging.getLogger(__name__)
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--train', type=str,
@@ -24,12 +22,8 @@ if __name__ == '__main__':
         default=os.environ['SM_MODEL_DIR']
     )
     args = parser.parse_args()
-    train_data_path = args.train
-    logger.info('LOG WHAT IS INSIDE ARGS.TRAIN')
-    for i in Path(args.train).iterdir():
-        logger.info(i)
 
-    train_data_path = str(Path(train_data_path) / 'shakespeare.txt')
+    train_data_path = str(Path(args.train) / 'shakespeare.txt')
     
     text = open(train_data_path, 'rb').read().decode(
         encoding='utf-8'
@@ -95,9 +89,15 @@ if __name__ == '__main__':
         save_weights_only=True
     )
     
-    EPOCHS = 5
+    EPOCHS = 1
     history = model.fit(
         dataset,
         epochs=EPOCHS,
         callbacks=[checkpoint_callback]
     )
+
+    # Save model to S3
+    model_path = str(
+        Path(args.model_dir) / 'model.keras'
+    )
+    model.save(model_path)
