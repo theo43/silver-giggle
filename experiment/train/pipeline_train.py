@@ -83,9 +83,7 @@ if __name__ == '__main__':
 
     step = TrainingStep(
         name="Shakespeare training step",
-        step_args=estimator.fit({
-            'train': s3_train_data
-        })
+        step_args=estimator.fit({'training': s3_train_data})
     )
 
     pipeline = Pipeline(
