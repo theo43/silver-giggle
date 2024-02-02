@@ -13,8 +13,12 @@ BUFFER_SIZE = 10000
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-      '--train-data', type=str,
-      default=os.environ['SM_CHANNEL_TRAINING']
+        '--train-data', type=str,
+        default=os.environ['SM_CHANNEL_TRAINING']
+    )
+    parser.add_argument(
+        '--model-dir', type=str,
+        default=os.environ['SM_MODEL_DIR']
     )
     args = parser.parse_args()
 
