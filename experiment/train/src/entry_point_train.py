@@ -14,7 +14,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--train-data', type=str,
-        default=os.environ['SM_CHANNEL_TRAINING']
+        default=os.environ['SM_CHANNEL_TRAIN']
     )
     parser.add_argument(
         '--model_dir', type=str,
