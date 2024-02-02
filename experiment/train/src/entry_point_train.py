@@ -97,7 +97,7 @@ if __name__ == '__main__':
     )
 
     # Save model to S3
-    model_path = str(
-        Path(args.model_dir) / 'model.keras'
-    )
-    model.save(model_path)
+    # model_path = str(
+    #     Path(args.model_dir) / 'model.keras'
+    # )
+    model.save(args.model_dir)
