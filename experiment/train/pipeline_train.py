@@ -5,6 +5,7 @@ from sagemaker.workflow.steps import TrainingStep
 from sagemaker.workflow.pipeline import Pipeline
 # from sagemaker.estimator import Estimator
 from sagemaker.tensorflow import TensorFlow
+from sagemaker.inputs import TrainingInput
 from sagemaker import get_execution_role
 import argparse
 
@@ -80,10 +81,10 @@ if __name__ == '__main__':
     )
 
     s3_train_data = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
-
+    training_input = TrainingInput(s3_train_data)
     step = TrainingStep(
         name="Shakespeare training step",
-        step_args=estimator.fit({'training': s3_train_data})
+        step_args=estimator.fit({'training': training_input})
     )
 
     pipeline = Pipeline(

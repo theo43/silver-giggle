@@ -1,7 +1,6 @@
 import tensorflow as tf
 import os
 import argparse
-from sagemaker.session import s3_input
 from shakespeare_model import (
     split_input_target, ShakespeareModel
 )
@@ -22,20 +21,11 @@ if __name__ == '__main__':
         default=os.environ['SM_MODEL_DIR']
     )
     args = parser.parse_args()
-
-    # Use s3_input to create an input channel
-    training_data_channel = s3_input(
-        args.train, content_type='text/csv'
-    )
-
-    # Use the input channel in your code
-    text = training_data_channel.get()['Body'].read().decode(
+    train_data_path = args.train
+    
+    text = open(args.train, 'rb').read().decode(
         encoding='utf-8'
     )
-    
-    # text = open(args.train, 'rb').read().decode(
-    #     encoding='utf-8'
-    # )
     vocab = sorted(set(text))
 
     # Get ids from chars and reversed
