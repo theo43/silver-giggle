@@ -109,6 +109,9 @@ if __name__ == '__main__':
     model_local_folder = './one_step_model'
     tf.saved_model.save(one_step_model, model_local_folder)
 
+    # Save also to model_dir
+    tf.saved_model.save(one_step_model, args.model_dir)
+    
     # Set up S3 client
     s3_client = boto3.client('s3')
     bucket_name = args.model_dir.split('://')[1].split('/')[0]
