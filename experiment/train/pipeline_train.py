@@ -87,13 +87,13 @@ if __name__ == '__main__':
     #     'TrainingJobName': 'shakespeare-training-job'
     # }
     step = TrainingStep(
-        name="Shakespeare training step",
+        name="shakespeare-training-step",
         estimator=estimator,
         inputs={'training': training_input}
     )
 
     pipeline = Pipeline(
-        name='Training pipeline',
+        name='shakespeare-pipeline',
         steps=[step],
         sagemaker_session=session
     )
