@@ -82,9 +82,14 @@ if __name__ == '__main__':
 
     s3_train_data = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
     training_input = TrainingInput(s3_train_data)
+    estimator.fit({'training': training_input})
+    step_args = {
+        'TrainingJobName': 'shakespeare-training-job'
+    }
     step = TrainingStep(
         name="Shakespeare training step",
-        step_args=estimator.fit({'training': training_input})
+        estimator=estimator,
+        step_args=step_args
     )
 
     pipeline = Pipeline(
