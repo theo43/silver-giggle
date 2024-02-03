@@ -100,7 +100,7 @@ if __name__ == '__main__':
 
     pipeline.upsert(
         role_arn=role,
-        description='Shakespeare training pipeline'
+        description='shakespeare-pipeline'
     )
 
     execution = pipeline.start()
