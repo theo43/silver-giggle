@@ -3,7 +3,7 @@ from pathlib import Path
 import os
 import argparse
 from shakespeare_model import (
-    split_input_target, ShakespeareModel
+    split_input_target, ShakespeareModel, OneStep
 )
 import boto3
 from botocore.exceptions import NoCredentialsError
@@ -102,20 +102,42 @@ if __name__ == '__main__':
         callbacks=[checkpoint_callback]
     )
 
-    # Save model to S3
-    # model_path = str(
-    #     Path(args.model_dir) / 'model.keras'
-    # )
-    model.save('./model.keras', save_format='tf')
+    # Create one step generator model
+    one_step_model = OneStep(model, chars_from_ids, ids_from_chars)
+    
+    # Save it locally
+    model_local_folder = './one_step_model'
+    tf.saved_model.save(one_step_model, model_local_folder)
 
-    # Set up S3 client (No need to pass access_key_id and secret_access_key when running on AWS services with IAM role)
+    # Set up S3 client
     s3_client = boto3.client('s3')
-
     bucket_name = args.model_dir.split('://')[1].split('/')[0]
-    key_list = args.model_dir.split('://')[1].split('/')[:1]
-    key = '/'.join(key_list)
-    # Upload the model to S3
-    try:
-        s3_client.upload_file('./model.keras', bucket_name, key)
-    except NoCredentialsError:
-        print("Credentials not available")
+    destination_list = args.model_dir.split('://')[1].split('/')[:1]
+    destination = '/'.join(destination_list)
+
+    # enumerate local files recursively
+    for root, dirs, files in os.walk(model_local_folder):
+
+        for filename in files:
+
+            # construct the full local path
+            local_path = os.path.join(root, filename)
+
+            # construct the full Dropbox path
+            relative_path = os.path.relpath(local_path, model_local_folder)
+            s3_path = os.path.join(destination, relative_path)
+
+            # relative_path = os.path.relpath(os.path.join(root, filename))
+
+            print('Searching "%s" in "%s"' % (s3_path, bucket_name))
+            try:
+                s3_client.head_object(Bucket=bucket_name, Key=s3_path)
+                print(f'Path found on S3! Skipping {s3_path}...')
+
+                # try:
+                    # client.delete_object(Bucket=bucket, Key=s3_path)
+                # except:
+                    # print("Unable to delete %s..." % s3_path)
+            except:
+                print(f'Uploading {s3_path}...')
+                s3_client.upload_file(local_path, bucket_name, s3_path)
