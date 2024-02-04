@@ -6,7 +6,6 @@ from shakespeare_model import (
     split_input_target, ShakespeareModel, OneStep
 )
 import boto3
-from botocore.exceptions import NoCredentialsError
 
 
 SEQ_LENGTH = 100
@@ -137,10 +136,6 @@ if __name__ == '__main__':
                 s3_client.head_object(Bucket=bucket_name, Key=s3_path)
                 print(f'Path found on S3! Skipping {s3_path}...')
 
-                # try:
-                    # client.delete_object(Bucket=bucket, Key=s3_path)
-                # except:
-                    # print("Unable to delete %s..." % s3_path)
             except:
                 print(f'Uploading {s3_path}...')
                 s3_client.upload_file(local_path, bucket_name, s3_path)
