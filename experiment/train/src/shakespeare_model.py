@@ -37,12 +37,12 @@ class ShakespeareModel(tf.keras.Model):
         x = self.dense(x, training=training)
 
         if return_state:
-          return x, states
+            return x, states
         else:
-          return x
+            return x
 
 
-class OneStep(tf.keras.Model):
+class OneStepModel(tf.keras.Model):
     def __init__(self, model, chars_from_ids, ids_from_chars, temperature=1.0):
         super().__init__()
         self.temperature = temperature
@@ -85,4 +85,3 @@ class OneStep(tf.keras.Model):
 
         # Return the characters and model state.
         return predicted_chars, states
-
