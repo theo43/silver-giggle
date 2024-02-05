@@ -3,7 +3,7 @@ from pathlib import Path
 import os
 import argparse
 from shakespeare_model import (
-    split_input_target, ShakespeareModel, OneStepModel
+    ShakespeareModel, OneStepModel, generate_batch_dataset
 )
 from aws_utils import upload_folder_to_s3
 
@@ -30,10 +30,10 @@ if __name__ == '__main__':
     text = open(train_data_path, 'rb').read().decode(
         encoding='utf-8'
     )
+    vocab = sorted(set(text))
 
     # Reduce data amount for smoke training
     text = text[:10000]
-    vocab = sorted(set(text))
 
     # Get ids from chars and reversed
     ids_from_chars = tf.keras.layers.StringLookup(
@@ -44,26 +44,14 @@ if __name__ == '__main__':
         invert=True, mask_token=None
     )
 
-    # Data preparation into sequences
-    shakespeare_ids = ids_from_chars(
-        tf.strings.unicode_split(text, 'UTF-8')
+    train_dataset_batch = generate_batch_dataset(
+        text=text,
+        ids_from_chars=ids_from_chars,
+        seq_length=SEQ_LENGTH,
+        buffer_size=BUFFER_SIZE,
+        batch_size=BATCH_SIZE
     )
 
-    ids_dataset = tf.data.Dataset.from_tensor_slices(
-        shakespeare_ids
-    )
-
-    sequences = ids_dataset.batch(
-        SEQ_LENGTH+1, drop_remainder=True
-    )
-
-    dataset = sequences.map(split_input_target)
-
-    # Create training batches
-    dataset = dataset.shuffle(BUFFER_SIZE)\
-        .batch(BATCH_SIZE, drop_remainder=True)\
-        .prefetch(tf.data.experimental.AUTOTUNE)
-    
     # Length of the vocabulary in StringLookup Layer
     vocab_size = len(ids_from_chars.get_vocabulary())
 
@@ -96,7 +84,7 @@ if __name__ == '__main__':
     
     EPOCHS = 1
     history = model.fit(
-        dataset,
+        train_dataset_batch,
         epochs=EPOCHS,
         callbacks=[checkpoint_callback]
     )
