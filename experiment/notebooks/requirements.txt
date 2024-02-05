@@ -1,6 +1,5 @@
 tensorflow==2.15.0
 tensorflow_datasets==4.9.4
-tensorflow-text==2.13.0
 matplotlib==3.8.2
 jupyterlab==4.0.11
 ipykernel==6.29.0
