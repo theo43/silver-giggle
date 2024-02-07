@@ -3,9 +3,10 @@ from pathlib import Path
 import os
 import argparse
 from shakespeare_model import (
-    ShakespeareModel, OneStepModel, generate_batch_dataset
+    ShakespeareModel, generate_batch_dataset
 )
-from aws_utils import upload_folder_to_s3
+import boto3
+#from aws_utils import upload_folder_to_s3
 
 
 SEQ_LENGTH = 100
@@ -89,22 +90,23 @@ if __name__ == '__main__':
         callbacks=[checkpoint_callback]
     )
 
-    # Create OneStep generator model
-    one_step_model = OneStepModel(model, chars_from_ids, ids_from_chars)
-    
     # Save it locally
-    model_local_folder = './one_step_model'
-    tf.saved_model.save(one_step_model, model_local_folder)
+    model_local_path = './shakespeare_model.keras'
+    model.save(model_local_path)
 
-    # Save also to model_dir
-    tf.saved_model.save(one_step_model, args.model_dir)
-    
-    # Push model folder to s3
+    # Then to s3
     bucket_name = args.model_dir.split('://')[1].split('/')[0]
     destination_list = args.model_dir.split('://')[1].split('/')[:1]
     destination = '/'.join(destination_list)
-    upload_folder_to_s3(
-        local_folder_path=model_local_folder,
-        s3_bucket_name=bucket_name,
-        path_on_s3=destination
-    )
+    s3_client = boto3.client('s3')
+    s3_client.upload_file(model_local_path, bucket_name, destination)
+    # Save also to model_dir
+    #tf.saved_model.save(model, args.model_dir)
+    
+    # Push model folder to s3
+    
+    # upload_folder_to_s3(
+    #     local_folder_path=model_local_folder,
+    #     s3_bucket_name=bucket_name,
+    #     path_on_s3=destination
+    # )

@@ -1,6 +1,5 @@
 import tensorflow as tf
-from keras.src.layers.preprocessing.string_lookup import StringLookup
-
+from tensorflow.keras.layers.experimental.preprocessing import StringLookup
 
 tf.config.run_functions_eagerly(True)
 
@@ -21,6 +20,7 @@ def text_from_ids(ids, chars_from_ids_function):
     )
 
 
+@tf.keras.saving.register_keras_serializable(package='ShakespeareModelPackage')
 class ShakespeareModel(tf.keras.Model):
     def __init__(
         self,
@@ -51,6 +51,7 @@ class ShakespeareModel(tf.keras.Model):
             return x
 
 
+
 class OneStepModel(tf.keras.Model):
     def __init__(
         self,
@@ -74,7 +75,7 @@ class OneStepModel(tf.keras.Model):
             # Match the shape to the vocabulary
             dense_shape=[len(ids_from_chars.get_vocabulary())])
         self.prediction_mask = tf.sparse.to_dense(sparse_mask)
-
+    
     @tf.function
     def generate_one_step(self, inputs, states=None):
         # Convert strings to token IDs.
