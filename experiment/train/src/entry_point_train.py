@@ -1,9 +1,10 @@
 import tensorflow as tf
+import numpy as np
 from pathlib import Path
 import os
 import argparse
 from shakespeare_model import (
-    ShakespeareModel, generate_batch_dataset
+    ShakespeareModel, OneStepModel, generate_batch_dataset
 )
 import boto3
 #from aws_utils import upload_folder_to_s3
@@ -90,23 +91,32 @@ if __name__ == '__main__':
         callbacks=[checkpoint_callback]
     )
 
-    # Save it locally
-    model_local_path = './shakespeare_model.keras'
-    model.save(model_local_path)
+    # Integrate it to final custom model
+    one_step_model = OneStepModel(
+        model=model,
+        chars_from_ids=chars_from_ids,
+        ids_from_chars=ids_from_chars
+    )
+    # Call build to initialize computational graph
+    for input_example, _ in train_dataset_batch.take(1):
+        one_step_model.build(input_example.shape)
+    print(one_step_model.summary())
 
-    # Then to s3
+    # Save it locally
+    model_local_path = './one_step_model.keras'
+    one_step_model.save(model_local_path)
+
+    # Reload it to check it behaves as the saved one
+    one_step_model_loaded = tf.keras.models.load_model(model_local_path)
+    # Check that shape and all elements are equal
+    np.testing.assert_allclose(
+        one_step_model.model.predict(input_example),
+        one_step_model_loaded.model.predict(input_example)
+    )
+
+    # Then send it to s3
     bucket_name = args.model_dir.split('://')[1].split('/')[0]
     destination_list = args.model_dir.split('://')[1].split('/')[:1]
     destination = '/'.join(destination_list)
     s3_client = boto3.client('s3')
     s3_client.upload_file(model_local_path, bucket_name, destination)
-    # Save also to model_dir
-    #tf.saved_model.save(model, args.model_dir)
-    
-    # Push model folder to s3
-    
-    # upload_folder_to_s3(
-    #     local_folder_path=model_local_folder,
-    #     s3_bucket_name=bucket_name,
-    #     path_on_s3=destination
-    # )

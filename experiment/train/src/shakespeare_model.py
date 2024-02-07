@@ -41,7 +41,7 @@ class ShakespeareModel(tf.keras.Model):
         x = inputs
         x = self.embedding(x, training=training)
         if states is None:
-          states = self.gru.get_initial_state(x)
+            states = self.gru.get_initial_state(x)
         x, states = self.gru(x, initial_state=states, training=training)
         x = self.dense(x, training=training)
 
@@ -52,6 +52,7 @@ class ShakespeareModel(tf.keras.Model):
 
 
 
+@tf.keras.saving.register_keras_serializable(package='OneStepModelPackage')
 class OneStepModel(tf.keras.Model):
     def __init__(
         self,
@@ -75,6 +76,32 @@ class OneStepModel(tf.keras.Model):
             # Match the shape to the vocabulary
             dense_shape=[len(ids_from_chars.get_vocabulary())])
         self.prediction_mask = tf.sparse.to_dense(sparse_mask)
+
+    def get_config(self):
+        config = super().get_config()
+        # Update the config with the custom layer's parameters
+        config.update(
+            {
+                "model": self.model,
+                "chars_from_ids": self.chars_from_ids,
+                "ids_from_chars": self.ids_from_chars,
+                "temperature": self.temperature,
+            }
+        )
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        config['model'] = tf.keras.layers.deserialize(config['model'])
+        config['chars_from_ids'] = tf.keras.layers.deserialize(config['chars_from_ids'])
+        config['ids_from_chars'] = tf.keras.layers.deserialize(config['ids_from_chars'])
+        config['temperature'] = tf.keras.layers.deserialize(config['temperature'])
+        return cls(**config)
+
+    def call(self, inputs):
+        x = inputs
+        x = self.model(x)
+        return x
     
     @tf.function
     def generate_one_step(self, inputs, states=None):
@@ -120,6 +147,7 @@ class OneStepModel(tf.keras.Model):
                 stop = True
 
         return tf.strings.join(result)[0].numpy().decode('utf-8')
+
 
 
 def generate_batch_dataset(
