@@ -6,6 +6,7 @@ import argparse
 from shakespeare_model import (
     ShakespeareModel, OneStepModel, generate_batch_dataset
 )
+import pickle
 import boto3
 #from aws_utils import upload_folder_to_s3
 
@@ -27,12 +28,17 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    train_data_path = str(Path(args.train) / 'shakespeare.txt')
-    
+    # Load train text data
+    train_data_path = str(Path(args.train) / 'train_text.txt')
     text = open(train_data_path, 'rb').read().decode(
         encoding='utf-8'
     )
-    vocab = sorted(set(text))
+    # vocab = sorted(set(text))
+    
+    # Load vocabulary of the whole text
+    vocab_path = str(Path(args.train) / 'vocab.pkl')
+    with open(vocab_path, 'rb') as f:
+        vocab = pickle.load(f)
 
     # Reduce data amount for smoke training
     text = text[:10000]

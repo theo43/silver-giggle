@@ -1,10 +1,19 @@
 from sagemaker.workflow.pipeline_context import (
     LocalPipelineSession, PipelineSession
 )
-from sagemaker.workflow.steps import TrainingStep
+from sagemaker.workflow.steps import (
+    TrainingStep, ProcessingStep
+)
 from sagemaker.workflow.pipeline import Pipeline
+from sagemaker.workflow.parameters import (
+    ParameterString, ParameterInteger
+)
+from sagemaker.processing import (
+    ProcessingInput, ProcessingOutput
+)
 # from sagemaker.estimator import Estimator
 from sagemaker.tensorflow import TensorFlow
+from sagemaker.sklearn.processing import SKLearnProcessor
 from sagemaker.inputs import TrainingInput
 from sagemaker import get_execution_role
 import argparse
@@ -53,6 +62,42 @@ if __name__ == '__main__':
         session = PipelineSession()
         instance_count = 1
         instance_type = 'ml.m5.large'
+    
+    s3_data_uri = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
+    input_data = ParameterString(
+        name="InputDataShakespeare",
+        default_value=s3_data_uri,
+    )
+    processor = SKLearnProcessor(
+        framework_version='0.23-1',
+        instance_type=instance_type,
+        instance_count=instance_count,
+        base_job_name='data-processing-process',
+        role=role,
+        sagemaker_session=session,
+    )
+
+    step_data_process = ProcessingStep(
+        name='DataProcessing',
+        processor=processor,
+        inputs=[
+            ProcessingInput(
+                source=input_data,
+                destination='/opt/ml/processing/input'
+            )
+        ],
+        outputs=[
+            ProcessingOutput(
+                output_name='train',
+                source='/opt/ml/processing/train'
+            ),
+            ProcessingOutput(
+                output_name='valid',
+                source='/opt/ml/processing/valid'
+            )
+        ],
+        code='./src/data_processing.py'
+    )
 
     output_path = f's3://{s3_bucket_name}/models/estimator-models'
     # estimator = Estimator(
@@ -80,18 +125,25 @@ if __name__ == '__main__':
         output_path=output_path
     )
 
-    s3_train_data = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
-    training_input = TrainingInput(s3_train_data)
+    # training_input = TrainingInput(s3_data_uri)
 
-    step = TrainingStep(
-        name="shakespeare-training-step",
+    training_input = TrainingInput(
+        s3_data=step_data_process.properties.ProcessingOutputConfig.Outputs[
+            'train'
+        ].S3Output.S3Uri
+    )
+    step_train = TrainingStep(
+        name="TrainingStep",
         estimator=estimator,
         inputs={'training': training_input}
     )
 
     pipeline = Pipeline(
-        name='shakespeare-pipeline',
-        steps=[step],
+        name='ShakespearePipeline',
+        steps=[
+            step_data_process,
+            step_train
+        ],
         sagemaker_session=session
     )
 
