@@ -146,7 +146,7 @@ if __name__ == '__main__':
         name='ShakespearePipeline',
         parameters=[
             param_input_data
-        ]
+        ],
         steps=[
             step_data_process,
             step_train
