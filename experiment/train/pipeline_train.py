@@ -65,7 +65,7 @@ if __name__ == '__main__':
         session = PipelineSession()
         role = get_execution_role()
         instance_count = 1
-        instance_type = 'ml.m5.large'
+        instance_type = 'ml.m4.xlarge'
     
     s3_data_uri = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
     param_input_data = ParameterString(
