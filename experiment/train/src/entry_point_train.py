@@ -109,7 +109,7 @@ if __name__ == '__main__':
     print(one_step_model.summary())
 
     # Save it locally
-    model_local_path = f'{os.environ['SM_MODEL_DIR']}/one_step_model.keras'
+    model_local_path = f'{os.environ["SM_MODEL_DIR"]}/one_step_model.keras'
     one_step_model.save(model_local_path)
 
     # Reload it to check it behaves as the saved one
