@@ -68,7 +68,7 @@ if __name__ == '__main__':
         instance_type = 'ml.m5.large'
     
     s3_data_uri = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
-    input_data = ParameterString(
+    param_input_data = ParameterString(
         name="InputDataShakespeare",
         default_value=s3_data_uri,
     )
@@ -86,7 +86,7 @@ if __name__ == '__main__':
         processor=processor,
         inputs=[
             ProcessingInput(
-                source=input_data,
+                source=param_input_data,
                 destination='/opt/ml/processing/input'
             )
         ],
@@ -144,6 +144,9 @@ if __name__ == '__main__':
 
     pipeline = Pipeline(
         name='ShakespearePipeline',
+        parameters=[
+            param_input_data
+        ]
         steps=[
             step_data_process,
             step_train
