@@ -65,7 +65,7 @@ if __name__ == '__main__':
         session = PipelineSession()
         role = get_execution_role()
         instance_count = 1
-        instance_type = 'ml.m4.xlarge'
+        instance_type = 'ml.m5.large'
     
     s3_data_uri = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
     param_input_data = ParameterString(
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     )
     processor = SKLearnProcessor(
         framework_version='0.23-1',
-        instance_type=instance_type,
+        instance_type='t2.micro',
         instance_count=instance_count,
         base_job_name='data-processing-process',
         role=role,
