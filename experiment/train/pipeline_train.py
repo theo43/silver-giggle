@@ -74,7 +74,7 @@ if __name__ == '__main__':
     )
     processor = SKLearnProcessor(
         framework_version='0.23-1',
-        instance_type='t2.micro',
+        instance_type='ml.t3.medium',
         instance_count=instance_count,
         base_job_name='data-processing-process',
         role=role,
