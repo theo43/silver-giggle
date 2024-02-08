@@ -27,6 +27,9 @@ if __name__ == '__main__':
         '--s3-bucket-name', type=str, help='AWS S3 bucket name'
     )
     parser.add_argument(
+        '--role', type=str, help='AWS role'
+    )
+    parser.add_argument(
         '--image-uri', type=str, help='Training image URI'
     )
     parser.add_argument(
@@ -48,7 +51,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
-    role = get_execution_role()
     image_uri = args.image_uri
     local = args.local
 
@@ -56,10 +58,12 @@ if __name__ == '__main__':
     if local:
         session = LocalPipelineSession()
         session.config = {'local': {'local_code': True}}
+        role = args.role
         instance_count = 1
         instance_type = 'local'
     else:
         session = PipelineSession()
+        role = get_execution_role()
         instance_count = 1
         instance_type = 'ml.m5.large'
     
