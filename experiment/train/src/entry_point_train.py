@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
     # Then send it to s3
     bucket_name = args.model_dir.split('://')[1].split('/')[0]
-    destination_list = args.model_dir.split('://')[1].split('/')[:1]
+    destination_list = args.model_dir.split('://')[1].split('/')[1:-2]
     destination = '/'.join(destination_list)
     print(f'MODEL_DIR: {args.model_dir}')
     print(f'DESTINATION: {destination}')
