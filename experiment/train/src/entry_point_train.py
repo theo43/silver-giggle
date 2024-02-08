@@ -109,7 +109,7 @@ if __name__ == '__main__':
     print(one_step_model.summary())
 
     # Save it locally
-    model_local_path = './one_step_model.keras'
+    model_local_path = f'{os.environ['SM_MODEL_DIR']}/one_step_model.keras'
     one_step_model.save(model_local_path)
 
     # Reload it to check it behaves as the saved one
@@ -124,5 +124,7 @@ if __name__ == '__main__':
     bucket_name = args.model_dir.split('://')[1].split('/')[0]
     destination_list = args.model_dir.split('://')[1].split('/')[:1]
     destination = '/'.join(destination_list)
+    print(f'MODEL_DIR: {args.model_dir}')
+    print(f'DESTINATION: {destination}')
     s3_client = boto3.client('s3')
     s3_client.upload_file(model_local_path, bucket_name, destination)

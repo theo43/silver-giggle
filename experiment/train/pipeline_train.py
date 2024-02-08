@@ -2,7 +2,7 @@ from sagemaker.workflow.pipeline_context import (
     LocalPipelineSession, PipelineSession
 )
 from sagemaker.workflow.steps import (
-    TrainingStep, ProcessingStep
+    TrainingStep, ProcessingStep, CacheConfig
 )
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.parameters import (
@@ -66,6 +66,10 @@ if __name__ == '__main__':
         role = get_execution_role()
         instance_count = 1
         instance_type = 'ml.m5.large'
+        cache_config = CacheConfig(
+            enable_caching=True,
+            expire_after='10d'
+        )
     
     s3_data_uri = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
     param_input_data = ParameterString(
@@ -100,7 +104,8 @@ if __name__ == '__main__':
                 source='/opt/ml/processing/valid'
             )
         ],
-        code='./src/data_processing.py'
+        code='./src/data_processing.py',
+        cache_config=cache_config
     )
 
     output_path = f's3://{s3_bucket_name}/models/estimator-models'
@@ -139,7 +144,8 @@ if __name__ == '__main__':
     step_train = TrainingStep(
         name="TrainingStep",
         estimator=estimator,
-        inputs={'training': train_input}
+        inputs={'training': train_input},
+        cache_config=cache_config
     )
 
     pipeline = Pipeline(
