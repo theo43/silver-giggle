@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
     # training_input = TrainingInput(s3_data_uri)
 
-    training_input = TrainingInput(
+    train_input = TrainingInput(
         s3_data=step_data_process.properties.ProcessingOutputConfig.Outputs[
             'train'
         ].S3Output.S3Uri
@@ -139,7 +139,7 @@ if __name__ == '__main__':
     step_train = TrainingStep(
         name="TrainingStep",
         estimator=estimator,
-        inputs={'training': training_input}
+        inputs={'training': train_input}
     )
 
     pipeline = Pipeline(
