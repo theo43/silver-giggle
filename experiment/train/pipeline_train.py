@@ -184,7 +184,7 @@ if __name__ == '__main__':
                 source='/opt/ml/processing/evaluation'
             )
         ],
-        code='./src/entry_point_evaluation.py',
+        code='./src/entrypoint_evaluation.py',
         property_files=[evaluation_report]
     )
 
