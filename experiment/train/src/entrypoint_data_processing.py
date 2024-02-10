@@ -26,7 +26,3 @@ if __name__ == '__main__':
     vocab_path_train = f'{base_dir}/train/vocab.pkl'
     with open(vocab_path_train, 'wb') as f:
         pickle.dump(vocab, f)
-    
-    vocab_path_valid = f'{base_dir}/valid/vocab.pkl'
-    with open(vocab_path_valid, 'wb') as f:
-        pickle.dump(vocab, f)

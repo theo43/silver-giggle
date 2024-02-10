@@ -5,14 +5,15 @@ from sagemaker.workflow.steps import (
     TrainingStep, ProcessingStep, CacheConfig
 )
 from sagemaker.workflow.pipeline import Pipeline
+from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.parameters import (
     ParameterString, ParameterInteger
 )
 from sagemaker.processing import (
-    ProcessingInput, ProcessingOutput
+    ProcessingInput, ProcessingOutput, ScriptProcessor
 )
-# from sagemaker.estimator import Estimator
-from sagemaker.tensorflow import TensorFlow
+from sagemaker.estimator import Estimator
+# from sagemaker.tensorflow import TensorFlow
 from sagemaker.sklearn.processing import SKLearnProcessor
 from sagemaker.inputs import TrainingInput
 from sagemaker import get_execution_role
@@ -76,7 +77,7 @@ if __name__ == '__main__':
         name="InputDataShakespeare",
         default_value=s3_data_uri,
     )
-    processor = SKLearnProcessor(
+    processor_data = SKLearnProcessor(
         framework_version='0.23-1',
         instance_type='ml.t3.medium',
         instance_count=instance_count,
@@ -87,7 +88,7 @@ if __name__ == '__main__':
 
     step_data_process = ProcessingStep(
         name='DataProcessing',
-        processor=processor,
+        processor=processor_data,
         inputs=[
             ProcessingInput(
                 source=param_input_data,
@@ -104,35 +105,35 @@ if __name__ == '__main__':
                 source='/opt/ml/processing/valid'
             )
         ],
-        code='./src/data_processing.py',
+        code='./src/entrypoint_data_processing.py',
         cache_config=cache_config
     )
 
     output_path = f's3://{s3_bucket_name}/models/estimator-models'
-    # estimator = Estimator(
-    #    image_uri=image_uri,
-    #    role=role,
-    #    instance_type=instance_type,
-    #    instance_count=instance_count,
-    #    source_dir='src',
-    #    entry_point='entry_point_train.py',
-    #    output_path=output_path,
-    #    training_repository_access_mode='Vpc',
-    #    subnets=[
-    #        args.subnet_id1, args.subnet_id2, args.subnet_id3
-    #    ],
-    #    security_group_ids=[args.security_group_id]
-    # )
-    estimator = TensorFlow(
-        py_version='py310',
-        framework_version='2.13',
-        role=role,
-        instance_type=instance_type,
-        instance_count=instance_count,
-        source_dir='src',
-        entry_point='entry_point_train.py',
-        output_path=output_path
+    estimator = Estimator(
+       image_uri=image_uri,
+       role=role,
+       instance_type=instance_type,
+       instance_count=instance_count,
+       source_dir='src',
+       entry_point='entry_point_train.py',
+       output_path=output_path,
+       training_repository_access_mode='Vpc',
+       subnets=[
+           args.subnet_id1, args.subnet_id2, args.subnet_id3
+       ],
+       security_group_ids=[args.security_group_id]
     )
+    # estimator = TensorFlow(
+    #     py_version='py310',
+    #     framework_version='2.13',
+    #     role=role,
+    #     instance_type=instance_type,
+    #     instance_count=instance_count,
+    #     source_dir='src',
+    #     entry_point='entrypoint_train.py',
+    #     output_path=output_path
+    # )
 
     # training_input = TrainingInput(s3_data_uri)
 
@@ -142,10 +143,49 @@ if __name__ == '__main__':
         ].S3Output.S3Uri
     )
     step_train = TrainingStep(
-        name="TrainingStep",
+        name='TrainingStep',
         estimator=estimator,
         inputs={'training': train_input},
         cache_config=cache_config
+    )
+
+    processor_eval = ScriptProcessor(
+        image_uri=image_uri,
+        command=['python3'],
+        instance_type='',
+        instance_count=1,
+        base_job_name='bert-score-evaluation',
+        role=role
+    )
+    # Evaluation step
+    evaluation_report = PropertyFile(
+        name='EvaluationReport',
+        output_name='evaluation',
+        path='evaluation.json'
+    )
+    step_eval = ProcessingStep(
+        name='EvaluationStep',
+        processor=processor_eval,
+        inputs=[
+            ProcessingInput(
+                source=step_train.properties.ModelArtifacts.S3ModelArtifacts,
+                destination='/opt/ml/processing/model'
+            ),
+            ProcessingInput(
+                source=step_data_process.properties.ProcessingOutputConfig.Outputs[
+                    'valid'
+                ].S3Output.S3Uri,
+                destination='/opt/ml/processing/valid'
+            )
+        ],
+        outputs=[
+            ProcessingOutput(
+                output_name='evaluation',
+                source='/opt/ml/processing/evaluation'
+            )
+        ],
+        code='./src/entry_point_evaluation.py',
+        property_files=[evaluation_report]
     )
 
     pipeline = Pipeline(
