@@ -195,7 +195,8 @@ if __name__ == '__main__':
         ],
         steps=[
             step_data_process,
-            step_train
+            step_train,
+            step_eval
         ],
         sagemaker_session=session
     )

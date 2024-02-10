@@ -46,7 +46,7 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.TRAIN_IMAGE_NAME }}:${{ github.sha }}
 
   train_job:
-    needs: build_and_push
+    # needs: build_and_push
     runs-on: ubuntu-latest
 
     steps:
@@ -71,12 +71,23 @@ jobs:
         run: |
           pip install sagemaker==2.204.0
 
+      # - name: SageMaker Training
+      #   run: |
+      #     cd experiment/train
+      #     python pipeline_train.py \
+      #     --s3-bucket-name ${{ secrets.AWS_S3_BUCKET_NAME }} \
+      #     --image-uri docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.TRAIN_IMAGE_NAME }}:${{ github.sha }} \
+      #     --subnet-id1 ${{ secrets.AWS_SUBNET_ID1 }} \
+      #     --subnet-id2 ${{ secrets.AWS_SUBNET_ID2 }} \
+      #     --subnet-id3 ${{ secrets.AWS_SUBNET_ID3 }} \
+      #     --security-group-id ${{ secrets.AWS_SECURITY_GROUP_ID }}
+      
       - name: SageMaker Training
         run: |
           cd experiment/train
           python pipeline_train.py \
           --s3-bucket-name ${{ secrets.AWS_S3_BUCKET_NAME }} \
-          --image-uri docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.TRAIN_IMAGE_NAME }}:${{ github.sha }} \
+          --image-uri docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.TRAIN_IMAGE_NAME }}:latest \
           --subnet-id1 ${{ secrets.AWS_SUBNET_ID1 }} \
           --subnet-id2 ${{ secrets.AWS_SUBNET_ID2 }} \
           --subnet-id3 ${{ secrets.AWS_SUBNET_ID3 }} \
