@@ -152,7 +152,7 @@ if __name__ == '__main__':
     processor_eval = ScriptProcessor(
         image_uri=image_uri,
         command=['python3'],
-        instance_type='',
+        instance_type='ml.t3.medium',
         instance_count=1,
         base_job_name='bert-score-evaluation',
         role=role
