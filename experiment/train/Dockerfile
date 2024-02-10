@@ -6,7 +6,7 @@ WORKDIR /opt/ml/code
 
 # Install Python dependencies
 RUN pip3 install sagemaker-training
-COPY requirements-train.txt .
+COPY ./experiment/train/requirements-train.txt .
 RUN pip3 install --no-cache-dir -r ./requirements-train.txt
 
 #ENV MLFLOW_TRACKING_URI=to_be_replaced_by_ci_cd
