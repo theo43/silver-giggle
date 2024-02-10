@@ -116,7 +116,7 @@ if __name__ == '__main__':
        instance_type=instance_type,
        instance_count=instance_count,
        source_dir='src',
-       entry_point='entry_point_train.py',
+       entry_point='entrypoint_train.py',
        output_path=output_path,
        training_repository_access_mode='Vpc',
        subnets=[
