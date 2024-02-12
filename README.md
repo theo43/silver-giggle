@@ -2,7 +2,7 @@
 
 [![Training](https://github.com/theo43/silver-giggle/actions/workflows/training_workflow.yml/badge.svg)](https://github.com/theo43/silver-giggle/actions/workflows/training_workflow.yml)
 
-This project aims at using MLOps best practices to create, validate NLP models on AWS SageMaker, and productionize them with an API. 
+This project aims at using MLOps best practices to create, validate NLP models on the cloud, and productionize them with an API. 
 
 ## Architecture
 This single repository contains everything you need to `experiment` (train and validate

@@ -7,13 +7,13 @@ from sagemaker.workflow.steps import (
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.parameters import (
-    ParameterString, ParameterInteger
+    ParameterString
 )
 from sagemaker.processing import (
     ProcessingInput, ProcessingOutput, ScriptProcessor
 )
-from sagemaker.estimator import Estimator
-# from sagemaker.tensorflow import TensorFlow
+# from sagemaker.estimator import Estimator
+from sagemaker.tensorflow import TensorFlow
 from sagemaker.sklearn.processing import SKLearnProcessor
 from sagemaker.inputs import TrainingInput
 from sagemaker import get_execution_role
@@ -71,7 +71,8 @@ if __name__ == '__main__':
             enable_caching=True,
             expire_after='10d'
         )
-    
+
+    # Data processing step
     s3_data_uri = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
     param_input_data = ParameterString(
         name="InputDataShakespeare",
@@ -81,11 +82,10 @@ if __name__ == '__main__':
         framework_version='0.23-1',
         instance_type='ml.t3.medium',
         instance_count=instance_count,
-        base_job_name='data-processing-process',
+        base_job_name='data-processing-step',
         role=role,
         sagemaker_session=session,
     )
-
     step_data_process = ProcessingStep(
         name='DataProcessing',
         processor=processor_data,
@@ -109,34 +109,32 @@ if __name__ == '__main__':
         cache_config=cache_config
     )
 
+    # Training step
     output_path = f's3://{s3_bucket_name}/models/estimator-models'
-    estimator = Estimator(
-       image_uri=image_uri,
-       role=role,
-       instance_type=instance_type,
-       instance_count=instance_count,
-       source_dir='src',
-       entry_point='entrypoint_train.py',
-       output_path=output_path,
-       training_repository_access_mode='Vpc',
-       subnets=[
-           args.subnet_id1, args.subnet_id2, args.subnet_id3
-       ],
-       security_group_ids=[args.security_group_id]
-    )
-    # estimator = TensorFlow(
-    #     py_version='py310',
-    #     framework_version='2.13',
-    #     role=role,
-    #     instance_type=instance_type,
-    #     instance_count=instance_count,
-    #     source_dir='src',
-    #     entry_point='entrypoint_train.py',
-    #     output_path=output_path
+    # estimator = Estimator(
+    #    image_uri=image_uri,
+    #    role=role,
+    #    instance_type=instance_type,
+    #    instance_count=instance_count,
+    #    source_dir='src',
+    #    entry_point='entrypoint_train.py',
+    #    output_path=output_path,
+    #    training_repository_access_mode='Vpc',
+    #    subnets=[
+    #        args.subnet_id1, args.subnet_id2, args.subnet_id3
+    #    ],
+    #    security_group_ids=[args.security_group_id]
     # )
-
-    # training_input = TrainingInput(s3_data_uri)
-
+    estimator = TensorFlow(
+        py_version='py310',
+        framework_version='2.13',
+        role=role,
+        instance_type=instance_type,
+        instance_count=instance_count,
+        source_dir='src',
+        entry_point='entrypoint_train.py',
+        output_path=output_path
+    )
     train_input = TrainingInput(
         s3_data=step_data_process.properties.ProcessingOutputConfig.Outputs[
             'train'
@@ -149,6 +147,7 @@ if __name__ == '__main__':
         cache_config=cache_config
     )
 
+    # Evaluation step
     processor_eval = ScriptProcessor(
         image_uri=image_uri,
         command=['python3'],
@@ -157,7 +156,6 @@ if __name__ == '__main__':
         base_job_name='bert-score-evaluation',
         role=role
     )
-    # Evaluation step
     evaluation_report = PropertyFile(
         name='EvaluationReport',
         output_name='evaluation',
@@ -185,9 +183,13 @@ if __name__ == '__main__':
             )
         ],
         code='./src/entrypoint_evaluation.py',
-        property_files=[evaluation_report]
+        property_files=[evaluation_report],
+        job_arguments=[
+            '--bucket-name', s3_bucket_name,
+        ]
     )
 
+    # Define the whole pipeline
     pipeline = Pipeline(
         name='ShakespearePipeline',
         parameters=[
@@ -200,10 +202,8 @@ if __name__ == '__main__':
         ],
         sagemaker_session=session
     )
-
     pipeline.upsert(
         role_arn=role,
         description='shakespeare-pipeline'
     )
-
     execution = pipeline.start()

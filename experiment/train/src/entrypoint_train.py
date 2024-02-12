@@ -7,8 +7,6 @@ from shakespeare_model import (
     ShakespeareModel, OneStepModel, generate_batch_dataset
 )
 import pickle
-# import boto3
-#from aws_utils import upload_folder_to_s3
 
 
 SEQ_LENGTH = 100
@@ -119,12 +117,3 @@ if __name__ == '__main__':
         one_step_model.model.predict(input_example),
         one_step_model_loaded.model.predict(input_example)
     )
-
-    # Then send it to s3
-    # bucket_name = args.model_dir.split('://')[1].split('/')[0]
-    # destination_list = args.model_dir.split('://')[1].split('/')[1:-2]
-    # destination = '/'.join(destination_list)
-    # print(f'MODEL_DIR: {args.model_dir}')
-    # print(f'DESTINATION: {destination}')
-    # s3_client = boto3.client('s3')
-    # s3_client.upload_file(model_local_path, bucket_name, destination)

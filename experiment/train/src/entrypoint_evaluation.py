@@ -1,13 +1,19 @@
 from pathlib import Path
 import tensorflow as tf
-import numpy as np
 import json
 import pathlib
 from pathlib import Path
 from bert_score import BERTScorer
+import argparse
+import boto3
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--bucket-name', type=str, help='Bucket name'
+    )
+    args = parser.parse_args()
     base_dir = '/opt/ml/processing'
     data_path = Path(base_dir) / 'valid/valid_text.txt'
     text_valid = open(str(data_path), 'rb').read().decode(
@@ -47,3 +53,10 @@ if __name__ == '__main__':
     evaluation_path = f"{output_dir}/evaluation.json"
     with open(evaluation_path, "w") as f:
         f.write(json.dumps(report_dict))
+
+    # Send model to S3
+    destination_path = 'models/estimator_models'
+    s3_client = boto3.client('s3')
+    s3_client.upload_file(
+        local_model_path, args.bucket_name, destination_path
+    )
