@@ -122,12 +122,13 @@ if __name__ == '__main__':
        source_dir='src',
        entry_point='entrypoint_train.py',
        output_path=output_path,
-       training_repository_access_mode='Vpc',
-       subnets=[
-           args.subnet_id1, args.subnet_id2, args.subnet_id3
-       ],
-       security_group_ids=[args.security_group_id]
     )
+    #    training_repository_access_mode='Vpc',
+    #    subnets=[
+    #        args.subnet_id1, args.subnet_id2, args.subnet_id3
+    #    ],
+    #    security_group_ids=[args.security_group_id]
+
     # estimator = TensorFlow(
     #     py_version='py310',
     #     framework_version='2.13',
