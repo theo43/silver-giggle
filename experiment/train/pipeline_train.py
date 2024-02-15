@@ -34,6 +34,9 @@ if __name__ == '__main__':
         '--image-uri', type=str, help='Training image URI'
     )
     parser.add_argument(
+        '--image-ecr-uri', type=str, help='Training image ECR URI'
+    )
+    parser.add_argument(
         '--local', type=bool, default=False,
         help='Local mode execution'
     )
@@ -52,7 +55,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
-    image_uri = args.image_uri
+    image_uri = args.image_ecr_uri
     local = args.local
 
 
