@@ -119,10 +119,10 @@ if __name__ == '__main__':
        role=role,
        instance_type=instance_type,
        instance_count=instance_count,
-       entry_point='entrypoint_train.py',
        output_path=output_path,
     )
     #    source_dir='src',
+    #    entry_point='entrypoint_train.py',
     #    training_repository_access_mode='Vpc',
     #    subnets=[
     #        args.subnet_id1, args.subnet_id2, args.subnet_id3
