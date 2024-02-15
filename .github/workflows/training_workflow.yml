@@ -87,7 +87,7 @@ jobs:
           cd experiment/train
           python pipeline_train.py \
           --s3-bucket-name ${{ secrets.AWS_S3_BUCKET_NAME }} \
-          --image_ecr_uri ${{ secrets.AWS_ECR_IMAGE_URI }} \
+          --image-ecr-uri ${{ secrets.AWS_ECR_IMAGE_URI }} \
           --subnet-id1 ${{ secrets.AWS_SUBNET_ID1 }} \
           --subnet-id2 ${{ secrets.AWS_SUBNET_ID2 }} \
           --subnet-id3 ${{ secrets.AWS_SUBNET_ID3 }} \
