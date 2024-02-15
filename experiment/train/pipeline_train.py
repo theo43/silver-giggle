@@ -134,7 +134,7 @@ if __name__ == '__main__':
     #     source_dir='src',
     #     entry_point='entrypoint_train.py',
     #     output_path=output_path
-    )
+    # )
     train_input = TrainingInput(
         s3_data=step_data_process.properties.ProcessingOutputConfig.Outputs[
             'train'
