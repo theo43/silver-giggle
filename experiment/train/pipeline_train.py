@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
-    image_uri = args.image_ecr_uri
+    image_uri = args.image_uri
     local = args.local
 
 
@@ -120,9 +120,16 @@ if __name__ == '__main__':
        instance_type=instance_type,
        instance_count=instance_count,
        output_path=output_path,
+       source_dir='src',
+       entry_point='entrypoint_train.py',
+       training_repository_access_mode='Vpc',
+       subnets=[
+           args.subnet_id1, args.subnet_id2, args.subnet_id3
+       ],
+       security_group_ids=[args.security_group_id]
     )
-    #    source_dir='src',
-    #    entry_point='entrypoint_train.py',
+    #    
+    #    ,
     #    training_repository_access_mode='Vpc',
     #    subnets=[
     #        args.subnet_id1, args.subnet_id2, args.subnet_id3
