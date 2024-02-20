@@ -123,6 +123,7 @@ if __name__ == '__main__':
     # TODO: do it later after model evaluation when we find way to calculate metrics
     destination_path = 'models/estimator_models'
     s3_client = boto3.client('s3')
+    bucket_name = args.model_dir.split('://')[1].split('/')[0]
     s3_client.upload_file(
-        model_local_path, args.bucket_name, destination_path
+        model_local_path, bucket_name, destination_path
     )
