@@ -13,6 +13,7 @@ import pickle
 SEQ_LENGTH = 100
 BATCH_SIZE = 64
 BUFFER_SIZE = 10000
+EPOCHS = 30
 
 
 if __name__ == '__main__':
@@ -32,7 +33,6 @@ if __name__ == '__main__':
     text = open(train_data_path, 'rb').read().decode(
         encoding='utf-8'
     )
-    # vocab = sorted(set(text))
     
     # Load vocabulary of the whole text
     vocab_path = str(Path(args.train) / 'vocab.pkl')
@@ -40,7 +40,7 @@ if __name__ == '__main__':
         vocab = pickle.load(f)
 
     # Reduce data amount for smoke training
-    text = text[:10000]
+    #text = text[:10000]
 
     # Get ids from chars and reversed
     ids_from_chars = tf.keras.layers.StringLookup(
@@ -88,8 +88,7 @@ if __name__ == '__main__':
         filepath=checkpoint_prefix,
         save_weights_only=True
     )
-    
-    EPOCHS = 1
+
     history = model.fit(
         train_dataset_batch,
         epochs=EPOCHS,
