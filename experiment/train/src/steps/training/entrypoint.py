@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-
+import boto3
 import tensorflow as tf
 import numpy as np
 from pathlib import Path
@@ -118,4 +117,12 @@ if __name__ == '__main__':
     np.testing.assert_allclose(
         one_step_model.model.predict(input_example),
         one_step_model_loaded.model.predict(input_example)
+    )
+
+    # Send model to S3
+    # TODO: do it later after model evaluation when we find way to calculate metrics
+    destination_path = 'models/estimator_models'
+    s3_client = boto3.client('s3')
+    s3_client.upload_file(
+        model_local_path, args.bucket_name, destination_path
     )
