@@ -20,7 +20,7 @@ if __name__ == '__main__':
         encoding='utf-8'
     )
     
-    local_model_path = '/opt/ml/processing/model/one_step_model.keras'
+    local_model_path = Path(base_dir) / 'model/one_step_model.keras'
     one_step_model = tf.keras.models.load_model(local_model_path)
 
     idx_start = 8
@@ -47,7 +47,7 @@ if __name__ == '__main__':
         'BERTScore_F1': round(F1.mean(), 4)
     }
 
-    output_dir = "/opt/ml/processing/evaluation"
+    output_dir = Path(base_dir) / "evaluation"
     pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
     
     evaluation_path = f"{output_dir}/evaluation.json"
