@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 def create_data_processing_step(
-    session,
+    session: str,
     role: str,
     s3_bucket_name: str,
     instance_count: int,
