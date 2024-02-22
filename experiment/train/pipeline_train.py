@@ -1,13 +1,15 @@
 from sagemaker.workflow.pipeline_context import (
     LocalPipelineSession, PipelineSession
 )
-from sagemaker.workflow.steps import TrainingStep
 from sagemaker.workflow.pipeline import Pipeline
-# from sagemaker.estimator import Estimator
-from sagemaker.tensorflow import TensorFlow
-from sagemaker.inputs import TrainingInput
 from sagemaker import get_execution_role
 import argparse
+from src.steps.data_processing.step_creator import (
+    create_data_processing_step
+)
+from src.steps.training.step_creator import (
+    create_training_step
+)
 
 
 if __name__ == '__main__':
@@ -18,7 +20,13 @@ if __name__ == '__main__':
         '--s3-bucket-name', type=str, help='AWS S3 bucket name'
     )
     parser.add_argument(
+        '--role', type=str, help='AWS role'
+    )
+    parser.add_argument(
         '--image-uri', type=str, help='Training image URI'
+    )
+    parser.add_argument(
+        '--image-ecr-uri', type=str, help='Training image ECR URI'
     )
     parser.add_argument(
         '--local', type=bool, default=False,
@@ -39,7 +47,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
-    role = get_execution_role()
     image_uri = args.image_uri
     local = args.local
 
@@ -47,57 +54,55 @@ if __name__ == '__main__':
     if local:
         session = LocalPipelineSession()
         session.config = {'local': {'local_code': True}}
+        role = args.role
         instance_count = 1
         instance_type = 'local'
     else:
         session = PipelineSession()
+        role = get_execution_role()
         instance_count = 1
         instance_type = 'ml.m5.large'
 
-    output_path = f's3://{s3_bucket_name}/models/estimator-models'
-    # estimator = Estimator(
-    #    image_uri=image_uri,
-    #    role=role,
-    #    instance_type=instance_type,
-    #    instance_count=instance_count,
-    #    source_dir='src',
-    #    entry_point='entry_point_train.py',
-    #    output_path=output_path,
-    #    training_repository_access_mode='Vpc',
-    #    subnets=[
-    #        args.subnet_id1, args.subnet_id2, args.subnet_id3
-    #    ],
-    #    security_group_ids=[args.security_group_id]
-    # )
-    estimator = TensorFlow(
-        py_version='py310',
-        framework_version='2.13',
-        role=role,
-        instance_type=instance_type,
-        instance_count=instance_count,
-        source_dir='src',
-        entry_point='entry_point_train.py',
-        output_path=output_path
+    # Data processing step
+    step_data_process, param_input_data = create_data_processing_step(
+        session,
+        role,
+        s3_bucket_name,
+        instance_count
     )
 
-    s3_train_data = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
-    training_input = TrainingInput(s3_train_data)
+    # Training step
+    train_data = step_data_process.properties.ProcessingOutputConfig.Outputs[
+        'train'
+    ].S3Output.S3Uri
 
-    step = TrainingStep(
-        name="shakespeare-training-step",
-        estimator=estimator,
-        inputs={'training': training_input}
+    step_train = create_training_step(
+        session,
+        role,
+        s3_bucket_name,
+        instance_type,
+        instance_count,
+        train_data
     )
 
+    # Evaluation step
+    # TODO
+
+    # Define the whole pipeline
     pipeline = Pipeline(
-        name='shakespeare-pipeline',
-        steps=[step],
+        name='ShakespearePipeline',
+        parameters=[
+            param_input_data
+        ],
+        steps=[
+            step_data_process,
+            step_train,
+            # step_eval
+        ],
         sagemaker_session=session
     )
-
     pipeline.upsert(
         role_arn=role,
         description='shakespeare-pipeline'
     )
-
     execution = pipeline.start()

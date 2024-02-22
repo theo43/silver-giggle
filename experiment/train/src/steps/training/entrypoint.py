@@ -1,16 +1,19 @@
+import boto3
 import tensorflow as tf
+import numpy as np
 from pathlib import Path
 import os
 import argparse
 from shakespeare_model import (
-    split_input_target, ShakespeareModel, OneStepModel
+    ShakespeareModel, OneStepModel, generate_batch_dataset
 )
-from aws_utils import upload_folder_to_s3
+import pickle
 
 
 SEQ_LENGTH = 100
 BATCH_SIZE = 64
 BUFFER_SIZE = 10000
+EPOCHS = 30
 
 
 if __name__ == '__main__':
@@ -25,15 +28,19 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
 
-    train_data_path = str(Path(args.train) / 'shakespeare.txt')
-    
+    # Load train text data
+    train_data_path = str(Path(args.train) / 'train_text.txt')
     text = open(train_data_path, 'rb').read().decode(
         encoding='utf-8'
     )
+    
+    # Load vocabulary of the whole text
+    vocab_path = str(Path(args.train) / 'vocab.pkl')
+    with open(vocab_path, 'rb') as f:
+        vocab = pickle.load(f)
 
     # Reduce data amount for smoke training
-    text = text[:10000]
-    vocab = sorted(set(text))
+    #text = text[:10000]
 
     # Get ids from chars and reversed
     ids_from_chars = tf.keras.layers.StringLookup(
@@ -44,26 +51,14 @@ if __name__ == '__main__':
         invert=True, mask_token=None
     )
 
-    # Data preparation into sequences
-    shakespeare_ids = ids_from_chars(
-        tf.strings.unicode_split(text, 'UTF-8')
+    train_dataset_batch = generate_batch_dataset(
+        text=text,
+        ids_from_chars=ids_from_chars,
+        seq_length=SEQ_LENGTH,
+        buffer_size=BUFFER_SIZE,
+        batch_size=BATCH_SIZE
     )
 
-    ids_dataset = tf.data.Dataset.from_tensor_slices(
-        shakespeare_ids
-    )
-
-    sequences = ids_dataset.batch(
-        SEQ_LENGTH+1, drop_remainder=True
-    )
-
-    dataset = sequences.map(split_input_target)
-
-    # Create training batches
-    dataset = dataset.shuffle(BUFFER_SIZE)\
-        .batch(BATCH_SIZE, drop_remainder=True)\
-        .prefetch(tf.data.experimental.AUTOTUNE)
-    
     # Length of the vocabulary in StringLookup Layer
     vocab_size = len(ids_from_chars.get_vocabulary())
 
@@ -93,30 +88,41 @@ if __name__ == '__main__':
         filepath=checkpoint_prefix,
         save_weights_only=True
     )
-    
-    EPOCHS = 1
+
     history = model.fit(
-        dataset,
+        train_dataset_batch,
         epochs=EPOCHS,
         callbacks=[checkpoint_callback]
     )
 
-    # Create OneStep generator model
-    one_step_model = OneStepModel(model, chars_from_ids, ids_from_chars)
-    
-    # Save it locally
-    model_local_folder = './one_step_model'
-    tf.saved_model.save(one_step_model, model_local_folder)
+    # Integrate it to final custom model
+    one_step_model = OneStepModel(
+        model=model,
+        chars_from_ids=chars_from_ids,
+        ids_from_chars=ids_from_chars
+    )
+    # Call build to initialize computational graph
+    for input_example, _ in train_dataset_batch.take(1):
+        one_step_model.build(input_example.shape)
+    print(one_step_model.summary())
 
-    # Save also to model_dir
-    tf.saved_model.save(one_step_model, args.model_dir)
-    
-    # Push model folder to s3
+    # Save it locally
+    model_local_path = f'{os.environ["SM_MODEL_DIR"]}/one_step_model.keras'
+    one_step_model.save(model_local_path)
+
+    # Reload it to check it behaves as the saved one
+    one_step_model_loaded = tf.keras.models.load_model(model_local_path)
+    # Check that shape and all elements are equal
+    np.testing.assert_allclose(
+        one_step_model.model.predict(input_example),
+        one_step_model_loaded.model.predict(input_example)
+    )
+
+    # Send model to S3
+    # TODO: do it later after model evaluation when we find way to calculate metrics
+    destination_path = 'models/estimator_models'
+    s3_client = boto3.client('s3')
     bucket_name = args.model_dir.split('://')[1].split('/')[0]
-    destination_list = args.model_dir.split('://')[1].split('/')[:1]
-    destination = '/'.join(destination_list)
-    upload_folder_to_s3(
-        local_folder_path=model_local_folder,
-        s3_bucket_name=bucket_name,
-        path_on_s3=destination
+    s3_client.upload_file(
+        model_local_path, bucket_name, destination_path
     )
