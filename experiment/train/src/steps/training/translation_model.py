@@ -44,7 +44,7 @@ class LayerNormalization(nn.Module):
         super().__init__()
         self.eps = eps
         self.alpha = nn.Parameter(torch.ones(1))  # Multiplied
-        self.bias = nn.Parameters(torch.zeros(1))  # Added
+        self.bias = nn.Parameter(torch.zeros(1))  # Added
 
     def forward(self, x):
         mean = x.mean(dim=-1, keepdim=True)
@@ -171,9 +171,17 @@ class DecoderBlock(nn.Module):
         )
     
     def forward(self, x, encoder_output, src_mask, tgt_mask):
-        x = self.residual_connections[0](x, lambda x: self.self_attention_block(x, x, x, tgt_mask))
-        x = self.residual_connections[1](x, lambda x: self.cross_attention_block(x, encoder_output, encoder_output, src_mask))
+        x = self.residual_connections[0](
+            x, lambda x: self.self_attention_block(x, x, x, tgt_mask)
+        )
+        x = self.residual_connections[1](
+            x,
+            lambda x: self.cross_attention_block(
+                x, encoder_output, encoder_output, src_mask
+            )
+        )
         x = self.residual_connections[2](x, self.feed_forward_block)
+        return x
     
 
 class Decoder(nn.Module):
@@ -183,7 +191,7 @@ class Decoder(nn.Module):
         self.norm = LayerNormalization()
     
     def forward(self, x, encoder_output, src_mask, tgt_mask):
-        for layer in self.layers:
+        for i, layer in enumerate(self.layers):
             x = layer(x, encoder_output, src_mask, tgt_mask)
         return self.norm(x)
 
@@ -224,7 +232,11 @@ class Transformer(nn.Module):
         return self.encoder(src, src_mask)
     
     def decode(
-        self, encoder_output, src_mask, tgt, tgt_mask
+        self,
+        encoder_output: torch.Tensor,
+        src_mask: torch.Tensor,
+        tgt: torch.Tensor,
+        tgt_mask: torch.Tensor
     ):
         tgt = self.tgt_embed(tgt)
         tgt = self.tgt_pos(tgt)
@@ -298,3 +310,4 @@ def build_transformer(
         if p.dim() > 1:
             nn.init.xavier_uniform_(p)
     
+    return transformer

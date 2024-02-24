@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import DataLoader, random_split
 from datasets import load_dataset
-from transformer_dataset import BilingualDataset, causal_mask
-from transformer_model import build_transformer
-from transformer_config import get_weights_file_path, get_config
+from translation_dataset import BilingualDataset
+from translation_model import build_transformer
+from translation_config import get_weights_file_path, get_config
 from tokenizers import Tokenizer
 from tokenizers.models import WordLevel
 from tokenizers.trainers import WordLevelTrainer
@@ -15,20 +15,20 @@ import warnings
 from torch.utils.tensorboard import SummaryWriter
 
 
-def run_validation(
-    model, validation_ds, tokenizer_src, tokenizer_tgt, max_len,
-    device, print_msg, global_state, writer, num_examples=2
-):
-    model.eval()
-    count = 0
-    source_texts = []
-    expected = []
-    predicted = []
+# def run_validation(
+#     model, validation_ds, tokenizer_src, tokenizer_tgt, max_len,
+#     device, print_msg, global_state, writer, num_examples=2
+# ):
+#     model.eval()
+#     count = 0
+#     source_texts = []
+#     expected = []
+#     predicted = []
 
-    # Size of the control window (default value)
-    console_width = 80
+#     # Size of the control window (default value)
+#     console_width = 80
 
-    with torch.no_grad():
+#     with torch.no_grad():
         
 
 def get_all_sentences(ds, lang):
@@ -48,6 +48,7 @@ def get_or_build_tokenizer(config, ds, lang):
         tokenizer.train_from_iterator(
             get_all_sentences(ds, lang), trainer=trainer
         )
+        tokenizer.save(str(tokenizer_path))
     else:
         tokenizer = Tokenizer.from_file(str(tokenizer_path))
     return tokenizer
@@ -71,7 +72,7 @@ def get_ds(config):
     train_ds_size = int(0.9 * len(ds_raw))
     val_ds_size = len(ds_raw) - train_ds_size
     train_ds_raw, val_ds_raw = random_split(
-        ds_raw, [train_ds_raw, val_ds_raw]
+        ds_raw, [train_ds_size, val_ds_size]
     )
 
     train_ds = BilingualDataset(
@@ -138,7 +139,7 @@ def train_model(config):
     writer = SummaryWriter(config['experiment_name'])
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'], eps=1e-9)
-
+    
     initial_epoch = 0
     global_step = 0
     if config['preload']:
@@ -165,7 +166,9 @@ def train_model(config):
 
             # Run the tensors through transformer
             encoder_output = model.encode(encoder_input, encoder_mask)  # (batch, seq_len, d_model)
-            decoder_output = model.decode(decoder_input, decoder_mask)  # (batch, seq_len, d_model)
+            decoder_output = model.decode(
+                encoder_output, encoder_mask, decoder_input, decoder_mask
+            )  # (batch, seq_len, d_model)
             proj_output = model.project(decoder_output)  # (batch, seq_len, tgt_vocab_size)
 
             label = batch['label'].to(device)  # (batch, seq_len)
