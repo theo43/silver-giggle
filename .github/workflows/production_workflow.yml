@@ -26,10 +26,10 @@ jobs:
         run: pip install -r ./production/requirements_prod.txt
 
       - name: Download model from S3
-        run: aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}.${{ secrets.AWS_S3_MODEL_PATH }} ./production/.
+        run: aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}.${{ secrets.AWS_S3_MODEL_PATH }} ./production/models/.
 
       - name: Extract model
-        run: tar -xvf ./production/model.tar.gz
+        run: tar -xvf ./production/models/model.tar.gz
 
       - name: Log in to DockerHub
         uses: docker/login-action@v3
