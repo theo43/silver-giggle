@@ -14,6 +14,7 @@ app = FastAPI(
 # Load the OneStep model
 model = tf.keras.models.load_model(MODEL_PATH)
 
+
 @app.get("/")
 def predict(text: str):
     predictions = model.generate_one_sentence(text)

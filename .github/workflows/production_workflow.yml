@@ -23,9 +23,6 @@ jobs:
         with:
           python-version: 3.11
 
-      - name: Install dependencies
-        run: pip install -r ./production/requirements_prod.txt
-
       - name: Download model from S3
         run: aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}.${{ secrets.AWS_S3_MODEL_PATH }} ./production/models/.
 
