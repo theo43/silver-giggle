@@ -1,5 +1,5 @@
 from sagemaker.processing import (
-    ProcessingInput, ProcessingOutput
+    ProcessingInput, ProcessingOutput, Processor
 )
 from sagemaker.workflow.parameters import (
     ParameterString
@@ -7,7 +7,6 @@ from sagemaker.workflow.parameters import (
 from sagemaker.workflow.steps import (
     ProcessingStep, CacheConfig
 )
-from sagemaker.sklearn.processing import SKLearnProcessor
 from pathlib import Path
 
 
@@ -15,15 +14,16 @@ def create_data_processing_step(
     session: str,
     role: str,
     s3_bucket_name: str,
+    image_uri: str,
     instance_count: int,
 ):
-    s3_data_uri = f's3://{s3_bucket_name}/datasets/shakespeare/shakespeare.txt'
+    s3_data_uri = f's3://{s3_bucket_name}/datasets/translation/en-es_dataset.pickle'
     param_input_data = ParameterString(
-        name="InputDataShakespeare",
+        name="InputDataTranslation",
         default_value=s3_data_uri,
     )
-    processor_data = SKLearnProcessor(
-        framework_version='0.23-1',
+    processor_data = Processor(
+        image_uri=image_uri,
         instance_type='ml.t3.medium',
         instance_count=instance_count,
         base_job_name='data-processing-step',

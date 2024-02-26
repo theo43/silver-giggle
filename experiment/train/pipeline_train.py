@@ -14,7 +14,7 @@ from src.steps.training.step_creator import (
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Text generation model training parser'
+        description='Translation model training parser'
     )
     parser.add_argument(
         '--s3-bucket-name', type=str, help='AWS S3 bucket name'

@@ -9,7 +9,7 @@ def get_config():
         'seq_len': 350,
         'd_model': 512,
         'lang_src': 'en',
-        'lang_tgt': 'it',
+        'lang_tgt': 'es',
         'model_folder': 'weights',
         'model_filename': 'tmodel_',
         'preload': None,
