@@ -79,7 +79,7 @@ jobs:
   #           ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.TRAIN_IMAGE_NAME }}:${{ github.sha }}
 
   train_job:
-    # needs: build_and_push
+    needs: build_training_image
     runs-on: ubuntu-latest
 
     steps:
