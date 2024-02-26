@@ -3,6 +3,9 @@ name: SageMaker Training Workflow
 on:
   workflow_dispatch:
   push:
+    paths:
+      - '.github/workflows/training_workflow.yml'
+      - experiment/train/*
     branches:
       - master
 
@@ -45,7 +48,7 @@ jobs:
   #           ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.TRAIN_IMAGE_NAME }}:latest
   #           ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.TRAIN_IMAGE_NAME }}:${{ github.sha }}
 
-  train_job:
+  training_job:
     # needs: build_and_push
     runs-on: ubuntu-latest
 

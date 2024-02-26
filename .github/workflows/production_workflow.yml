@@ -1,0 +1,46 @@
+name: Production Workflow
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/production_workflow.yml'
+      - production/*
+    branches:
+      - master
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Download model from S3
+        run: aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}.${{ secrets.AWS_S3_MODEL_PATH }} ./production/models/.
+
+      - name: Extract model
+        run: tar -xvf ./production/models/model.tar.gz
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./production/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PRODUCTION_IMAGE_NAME }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PRODUCTION_IMAGE_NAME }}:${{ github.sha }}
+    
