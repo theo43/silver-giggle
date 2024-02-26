@@ -35,6 +35,7 @@ jobs:
       - name: Download model from S3
         uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
+          command: cp
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
