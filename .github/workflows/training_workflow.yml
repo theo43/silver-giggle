@@ -1,16 +1,13 @@
 name: SageMaker Training Workflow
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
     paths:
       - '.github/workflows/training_workflow.yml'
       - experiment/train/*
-    types:
-      - closed
-  workflow_dispatch:
-  # push:
-  #   branches:
-  #     - master
+    branches:
+      - master
 
 permissions:
   id-token: write
@@ -52,7 +49,6 @@ jobs:
   #           ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.TRAIN_IMAGE_NAME }}:${{ github.sha }}
 
   training_job:
-    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'master')
     # needs: build_and_push
     runs-on: ubuntu-latest
 
