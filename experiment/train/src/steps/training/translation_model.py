@@ -253,7 +253,82 @@ class Transformer(nn.Module):
 
     def project(self, x):
         return self.projection_layer(x)
-    
+
+    def translate(
+        self,
+        sentence: str,
+        config: dict,
+        tokenizer_src,
+        tokenizer_tgt,
+        device: torch.device
+    ):
+        seq_len = config['seq_len']
+        dtype = torch.int64
+        with torch.no_grad():
+            source = tokenizer_src.encode(sentence)
+            nb_pad = seq_len - len(source.ids) - 2
+            source = torch.cat([
+                torch.tensor(
+                    [tokenizer_src.token_to_id('[SOS]')],
+                    dtype=dtype
+                ),
+                torch.tensor(source.ids, dtype=dtype),
+                torch.tensor(
+                    [tokenizer_src.token_to_id('[EOS]')],
+                    dtype=dtype
+                ),
+                torch.tensor(
+                    [tokenizer_src.token_to_id('[PAD]')] * nb_pad,
+                    dtype=dtype
+                )
+            ], dim=0).to(device)
+
+            source_mask = (
+                source != tokenizer_src.token_to_id('[PAD]')
+            ).unsqueeze(0).unsqueeze(0).int().to(device)
+
+            encoder_output = self.encode(source, source_mask)
+
+            # Initialize the decoder input with SOS token
+            decoder_input = torch.empty(1, 1).fill_(
+                tokenizer_tgt.token_to_id('[SOS]')
+            ).type_as(source).to(device)
+
+            # Print source and target sentences start prompt
+            print(f"{f'SOURCE: ':>12}{sentence}")
+            print(f"{f'PREDICTED: ':>12}", end='')
+
+            # Generate translation word by word
+            while decoder_input.size(1) < seq_len:
+                # Build mask for target and calculate output
+                decoder_mask = torch.triu(
+                    torch.ones(
+                        (1, decoder_input.size(1), decoder_input.size(1))),
+                    diagonal=1
+                ).type(torch.int).type_as(source_mask).to(device)
+                out = self.decode(
+                    encoder_output, source_mask, decoder_input, decoder_mask
+                )
+
+                # Project next token
+                prob = self.project(out[:, -1])
+                _, next_word = torch.max(prob, dim=-1)
+                decoder_input = torch.cat([
+                    decoder_input,
+                    torch.empty(1, 1).type_as(source).fill_(
+                        next_word.item()).to(device)
+                ], dim=1)
+
+                # Print the predicted word
+                print(tokenizer_tgt.decode([next_word.item()]), end=' ')
+
+                # If the predicted word is EOS, stop
+                if next_word.item() == tokenizer_tgt.token_to_id('[EOS]'):
+                    break
+
+        # Convert the predicted sentence to a string
+        return tokenizer_tgt.decode(decoder_input[0].tolist())
+
 
 def build_transformer(
     src_vocab_size: int,
@@ -270,7 +345,7 @@ def build_transformer(
     src_embed = InputEmbeddings(d_model, src_vocab_size)
     tgt_embed = InputEmbeddings(d_model, tgt_vocab_size)
 
-    # Create positional ecoding layers
+    # Create positional encoding layers
     src_pos = PositionalEncoding(d_model, src_seq_len, dropout)
     tgt_pos = PositionalEncoding(d_model, tgt_seq_len, dropout)
 
@@ -303,7 +378,7 @@ def build_transformer(
     # Create projection layer
     projection_layer = ProjectionLayer(d_model, tgt_vocab_size)
 
-    # Create the Transofrmer
+    # Create the Transformer
     transformer = Transformer(
         encoder,
         decoder,

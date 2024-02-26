@@ -19,7 +19,6 @@ def get_config():
 
 
 def get_weights_file_path(config, epoch: str):
-    model_folder = config['model_folder']
-    model_basename = config['model_filename']
-    model_filename = f'{model_basename}{epoch}.pt'
-    return str(Path('.') / model_folder / model_filename)
+    model_filename = f'{config["model_filename"]}{epoch}.pt'
+    model_filepath = Path('.') / config['model_folder'] / model_filename
+    return str(model_filepath)
