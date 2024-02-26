@@ -41,7 +41,16 @@ Today it seems that local SageMaker training is impossible with custom Docker im
 Setup an AWS account, create a user, a role that can be assumed by the user and provide those credentials to GithubActions secrets for CI/CD.
 
 ## Packages
-TODO: describe how to test and build packages locally
+`packages` contains the code used to validate models during experiments and in production. It is tested and packaged to avoid duplications.
+
+```
+cd packages/<package_name>/src
+python -m venv venv
+source ./venv/bin/activate
+pip install -r requirements.txt
+python -m unittest discover
+
+```
 
 ## Production
 TODO: describe how to test, build and deploy the API locally
