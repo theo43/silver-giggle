@@ -1,1 +1,1 @@
-bert-score==0.3.13
+./packages/translation-0.0.0.tar.gz

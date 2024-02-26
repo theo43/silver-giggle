@@ -11,17 +11,50 @@ permissions:
   contents: read
 
 jobs:
-  # build_and_push:
+  build_training_image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Test and build translation package
+        run: |
+          cd packages/translation/src
+          pip install --upgrade pip
+          pip install coverage==7.4.3 wheel==0.42.0 setuptools==65.5.0
+          pip install -r ../requirements.txt
+          coverage run -m unittest discover -s . -p 'test_*.py' && coverage report -m --fail-under=20
+          cd ..
+          python setup.py sdist bdist_wheel
+          cp dist/*.whl ../../experiment/train/packages/.
+        
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GithubActionsRoleSession
+
+      - name: Build training image and push it to ECR
+        run: |
+          cd experiment/train
+          docker build -t ${{ secrets.AWS_ECR_IMAGE_URI }} .
+          docker push ${{ secrets.AWS_ECR_IMAGE_URI }}
+
+  # build_and_push_training_image:
   #   runs-on: ubuntu-latest
 
   #   steps:
   #     - name: Checkout repository
   #       uses: actions/checkout@v4
-      
-  #     #- name: Set MLFLOW_TRACKING_URI environment variable in Dockerfile
-  #     #  run: |
-  #     #    sed -i 's|ENV MLFLOW_TRACKING_URI=.*|ENV MLFLOW_TRACKING_URI=s3://${{ secrets.AWS_S3_BUCKET_NAME}}/models/mlflow-runs|' \
-  #     #    ./experiment/train/Dockerfile
 
   #     - name: Set up QEMU
   #       uses: docker/setup-qemu-action@v3
