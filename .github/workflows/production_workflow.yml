@@ -46,8 +46,8 @@ jobs:
       - name: Push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./production/Dockerfile
+          context: ./production/
+          file: Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PRODUCTION_IMAGE_NAME }}:latest
