@@ -54,4 +54,3 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PRODUCTION_IMAGE_NAME }}:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PRODUCTION_IMAGE_NAME }}:${{ github.sha }}
-    
