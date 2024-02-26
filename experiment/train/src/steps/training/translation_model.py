@@ -4,9 +4,9 @@ import math
 
 
 class InputEmbeddings(nn.Module):
-    def __init__(self, d_model: int, vocab_size:int):
+    def __init__(self, d_model: int, vocab_size: int):
         super().__init__()
-        self.d_model =  d_model
+        self.d_model = d_model
         self.vocab_size = vocab_size
         self.embedding = nn.Embedding(vocab_size, d_model)
     
@@ -25,7 +25,9 @@ class PositionalEncoding(nn.Module):
         pe = torch.zeros(seq_len, d_model)
         # Create a vector of 
         position = torch.arange(0, seq_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.) / d_model))
+        div_term = torch.exp(
+            torch.arange(0, d_model, 2).float() * (-math.log(10000.) / d_model)
+        )
         # Apply sin to even positions
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
@@ -87,16 +89,23 @@ class MultiHeadAttentionBlock(nn.Module):
         # (batch, h, seq_len, d_k) --> (batch, h, seq_len, seq_len)
         if mask is not None:
             attention_scores.masked_fill_(mask == 0, -1e9)
-        attention_scores = attention_scores.softmax(dim=-1)  # (batch, h, seq_len, seq_len)
+
+        # (batch, h, seq_len, seq_len)
+        attention_scores = attention_scores.softmax(dim=-1)
         if dropout is not None:
             attention_scores = dropout(attention_scores)
         
         return (attention_scores @ value), attention_scores
 
     def forward(self, q, k, v, mask):
-        query = self.w_q(q)  # (batch, seq_len, d_model) --> (batch, seq_len, d_model)
-        key = self.w_k(k)  # (batch, seq_len, d_model) --> (batch, seq_len, d_model)
-        value = self.w_v(v)  # (batch, seq_len, d_model) --> (batch, seq_len, d_model)
+        # (batch, seq_len, d_model) --> (batch, seq_len, d_model)
+        query = self.w_q(q)
+
+        # (batch, seq_len, d_model) --> (batch, seq_len, d_model)
+        key = self.w_k(k)
+
+        # (batch, seq_len, d_model) --> (batch, seq_len, d_model)
+        value = self.w_v(v)
 
         # (batch, seq_len, d_model) --> (batch, seq_len, d_model, h, d_k) --> (batch, h, seq_len, d_k)
         query = query.view(query.shape[0], query.shape[1], self.h, self.d_k).transpose(1, 2)
