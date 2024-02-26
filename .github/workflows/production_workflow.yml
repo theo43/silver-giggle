@@ -1,26 +1,39 @@
 name: Production Workflow
 
 on:
-  workflow_dispatch:
-  push:
+  pull_request:
     paths:
       - '.github/workflows/production_workflow.yml'
       - production/*
-    branches:
-      - master
+    types:
+      - closed
+  workflow_dispatch:
 
 jobs:
   build_and_deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'master')
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GithubActionsRoleSession
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install -r ./production/requirements_prod.txt
 
       - name: Download model from S3
         run: aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}.${{ secrets.AWS_S3_MODEL_PATH }} ./production/models/.
