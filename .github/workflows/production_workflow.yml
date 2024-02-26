@@ -18,6 +18,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -27,11 +32,6 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           role-session-name: GithubActionsRoleSession
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
-
       - name: Download model from S3
         uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
@@ -39,7 +39,7 @@ jobs:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws_region: ${{ secrets.AWS_REGION }}
-          source: ${{ secrets.AWS_S3_MODEL_PATH }}
+          source: s3://${{ secrets.AWS_S3_BUCKET_NAME }}/${{ secrets.AWS_S3_MODEL_PATH }}
           destination: ./production/models/model.tar.gz
         # run: aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}.${{ secrets.AWS_S3_MODEL_PATH }} ./production/models/.
 
