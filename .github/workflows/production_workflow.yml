@@ -11,7 +11,6 @@ on:
 
 jobs:
   build_and_deploy:
-    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'master')
     runs-on: ubuntu-latest
 
     steps:
@@ -41,7 +40,7 @@ jobs:
         #   aws_region: ${{ secrets.AWS_REGION }}
         #   source: s3://${{ secrets.AWS_S3_BUCKET_NAME }}/${{ secrets.AWS_S3_MODEL_PATH }}
         #   destination: ./production/models/model.tar.gz
-        run: aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}/${{ secrets.AWS_S3_MODEL_PATH }} ./production/models/.
+        run: aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}/${{ secrets.AWS_S3_MODEL_PATH }} ./production/models
 
       - name: Extract model
         run: tar -xvf ./production/models/model.tar.gz
