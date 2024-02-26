@@ -60,3 +60,6 @@ This repository is inspired by the following sources:
 - [KREUZBERGER, Dominik, KÜHL, Niklas, et HIRSCHL, Sebastian. Machine learning operations (mlops): Overview, definition, and architecture. IEEE Access, 2023.](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10081336)
 - [Tensorflow tutorial for text generation using an RNN](https://www.tensorflow.org/text/tutorials/text_generation)
 - [Tensorflow tutorial for text translation using Transformers](https://www.tensorflow.org/text/tutorials/transformer)
+- https://www.youtube.com/watch?v=ISNdQcPhsts
+- https://github.com/hkproj/pytorch-transformer
+

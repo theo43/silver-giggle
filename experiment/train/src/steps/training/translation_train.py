@@ -167,7 +167,10 @@ def train_model(config: dict):
 
     for epoch in range(initial_epoch, config['num_epochs']):
         model.train()
-        batch_iterator = tqdm(train_dataloader, desc=f'Processing epoch {epoch:02d}')
+        batch_iterator = tqdm(
+            train_dataloader,
+            desc=f'Processing epoch {epoch:02d}'
+        )
         for batch in batch_iterator:
             # (batch, seq_len)
             encoder_input = batch['encoder_input'].to(device)
