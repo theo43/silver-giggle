@@ -35,7 +35,9 @@ jobs:
         run: aws s3 cp s3://${{ secrets.AWS_S3_BUCKET_NAME }}/${{ secrets.AWS_S3_MODEL_PATH }} ./production/models
 
       - name: Extract model
-        run: tar -xvf ./production/models/model.tar.gz
+        run: |
+          cd production
+          tar -xvf ./models/model.tar.gz
 
       - name: Log in to DockerHub
         uses: docker/login-action@v3
@@ -46,7 +48,7 @@ jobs:
       - name: Push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./production/
+          context: .
           file: Dockerfile
           push: true
           tags: |
