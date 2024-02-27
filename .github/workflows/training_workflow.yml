@@ -33,6 +33,7 @@ jobs:
           cd ..
           python setup.py sdist bdist_wheel
           cp dist/*.whl ../../experiment/train/packages/.
+          ls ../../experiment/train/packages
         
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -45,6 +46,7 @@ jobs:
 
       - name: Build training image and push it to ECR
         run: |
+          ls experiment/train/packages
           cd experiment/train
           docker build -t ${{ secrets.AWS_ECR_IMAGE_URI }} .
           docker push ${{ secrets.AWS_ECR_IMAGE_URI }}
