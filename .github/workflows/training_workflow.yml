@@ -33,7 +33,6 @@ jobs:
           cd ..
           python setup.py sdist bdist_wheel
           cp dist/*.whl ../../experiment/train/packages/.
-          ls ../../experiment/train/packages
         
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -44,12 +43,19 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           role-session-name: GithubActionsRoleSession
 
-      - name: Build training image and push it to ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build training image, tag and push it to ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          ls experiment/train/packages
           cd experiment/train
-          docker build -t ${{ secrets.AWS_ECR_IMAGE_URI }} .
-          docker push ${{ secrets.AWS_ECR_IMAGE_URI }}
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
   # build_and_push_training_image:
   #   runs-on: ubuntu-latest
