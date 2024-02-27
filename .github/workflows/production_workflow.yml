@@ -1,14 +1,14 @@
 name: Production Workflow
 
 on:
-  pull_request:
+  workflow_dispatch:
+  push:
     paths:
       - '.github/workflows/production_workflow.yml'
       - production/*
-    types:
-      - closed
-  workflow_dispatch:
-
+    branches:
+      - master
+  
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
