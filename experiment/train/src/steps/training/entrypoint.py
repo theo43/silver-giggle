@@ -8,8 +8,8 @@ import pickle
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import warnings
-from translation.config import get_config, get_weights_file_path
-from translation.model import build_transformer, get_model
+from translation.config import get_config
+from translation.model import get_model
 
 
 SEQ_LENGTH = 100

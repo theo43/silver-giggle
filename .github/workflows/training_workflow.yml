@@ -11,51 +11,51 @@ permissions:
   contents: read
 
 jobs:
-  build_training_image:
-    runs-on: ubuntu-latest
+  # build_training_image:
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.11
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: 3.11
 
-      - name: Test and build translation package
-        run: |
-          cd packages/translation/src
-          pip install --upgrade pip
-          pip install coverage==7.4.3 wheel==0.42.0 setuptools==65.5.0
-          pip install -r ../requirements.txt
-          coverage run -m unittest discover -s . -p 'test_*.py' && coverage report -m --fail-under=20
-          cd ..
-          python setup.py sdist bdist_wheel
-          cp dist/*.whl ../../experiment/train/packages/.
+  #     - name: Test and build translation package
+  #       run: |
+  #         cd packages/translation/src
+  #         pip install --upgrade pip
+  #         pip install coverage==7.4.3 wheel==0.42.0 setuptools==65.5.0
+  #         pip install -r ../requirements.txt
+  #         coverage run -m unittest discover -s . -p 'test_*.py' && coverage report -m --fail-under=20
+  #         cd ..
+  #         python setup.py sdist bdist_wheel
+  #         cp dist/*.whl ../../experiment/train/packages/.
         
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          role-session-name: GithubActionsRoleSession
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ secrets.AWS_REGION }}
+  #         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+  #         role-session-name: GithubActionsRoleSession
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+  #     - name: Login to Amazon ECR
+  #       id: login-ecr
+  #       uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build training image, tag and push it to ECR
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          cd experiment/train
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+  #     - name: Build training image, tag and push it to ECR
+  #       env:
+  #         REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+  #         REPOSITORY: ${{ secrets.AWS_ECR_REPOSITORY }}
+  #         IMAGE_TAG: ${{ github.sha }}
+  #       run: |
+  #         cd experiment/train
+  #         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+  #         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
   # build_and_push_training_image:
   #   runs-on: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
   #           ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.TRAIN_IMAGE_NAME }}:${{ github.sha }}
 
   train_job:
-    needs: build_training_image
+    # needs: build_training_image
     runs-on: ubuntu-latest
 
     steps:
