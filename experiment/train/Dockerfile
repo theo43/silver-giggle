@@ -16,5 +16,8 @@ COPY packages/ ./packages/
 
 RUN pip3 install -r ./requirements_train.txt
 
+# Set the working directory
+WORKDIR /opt/ml/code
+
 # # Set the entry point to your training script
 # ENV SAGEMAKER_PROGRAM entry_point.py
