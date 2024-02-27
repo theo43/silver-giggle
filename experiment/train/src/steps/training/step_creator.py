@@ -2,9 +2,10 @@ from sagemaker.workflow.steps import (
     TrainingStep, CacheConfig
 )
 from sagemaker.estimator import Estimator
-from sagemaker.tensorflow import TensorFlow
 from sagemaker.inputs import TrainingInput
 from pathlib import Path
+
+BASE_PATH = Path(__file__).resolve().parent
 
 
 def create_training_step(
@@ -13,19 +14,19 @@ def create_training_step(
     s3_bucket_name: str,
     instance_type: str,
     instance_count: int,
+    image_uri,
     train_data
 ):
     output_path = f's3://{s3_bucket_name}/models/estimator-models'
-
-    estimator = TensorFlow(
-        py_version='py310',
-        framework_version='2.13',
+    estimator = Estimator(
+        image_uri=image_uri,
         role=role,
         instance_type=instance_type,
         instance_count=instance_count,
-        source_dir=str(Path(__file__).resolve().parent),
+        source_dir=str(BASE_PATH),
         entry_point='entrypoint.py',
-        output_path=output_path
+        output_path=output_path,
+        sagemaker_session=session
     )
     train_input = TrainingInput(
         s3_data=train_data
