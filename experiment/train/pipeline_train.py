@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     # Define the whole pipeline
     pipeline = Pipeline(
-        name='ShakespearePipeline',
+        name='TranslationPipeline',
         parameters=[
             param_input_data
         ],
@@ -103,6 +103,6 @@ if __name__ == '__main__':
     )
     pipeline.upsert(
         role_arn=role,
-        description='shakespeare-pipeline'
+        description='translation-pipeline'
     )
     execution = pipeline.start()
