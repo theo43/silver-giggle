@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
-    image_uri = args.image_uri
+    image_ecr_uri = args.image_ecr_uri
     local = args.local
 
 
@@ -68,6 +68,7 @@ if __name__ == '__main__':
         session,
         role,
         s3_bucket_name,
+        image_ecr_uri,
         instance_count
     )
 
@@ -82,6 +83,7 @@ if __name__ == '__main__':
         s3_bucket_name,
         instance_type,
         instance_count,
+        image_ecr_uri,
         train_data
     )
 

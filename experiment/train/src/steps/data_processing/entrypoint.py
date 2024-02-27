@@ -25,10 +25,13 @@ if __name__ == '__main__':
 
     # Keep 90% for train, 10% validation
     train_ds_size = int(0.9 * len(ds_raw))
-    val_ds_size = len(ds_raw) - train_ds_size
+    valid_ds_size = len(ds_raw) - train_ds_size
     train_ds_raw, valid_ds_raw = random_split(
-        ds_raw, [train_ds_size, val_ds_size]
+        ds_raw, [train_ds_size, valid_ds_size]
     )
+
+    # TODO: delete when pipeline functional, smoke train
+    train_ds_raw = train_ds_raw.select(range(1000))
 
     train_ds = BilingualDataset(
         train_ds_raw,
@@ -78,7 +81,7 @@ if __name__ == '__main__':
     with open(str(Path(valid_path) / 'valid_dataloader.pickle'), 'wb') as f:
         pickle.dump(valid_dataloader, f)
     
-    tokenizer_src.save(str(Path(train_path) / f'tokenizer_{lang_src}].json'))
+    tokenizer_src.save(str(Path(train_path) / f'tokenizer_{lang_src}.json'))
     tokenizer_src.save(str(Path(valid_path) / f'tokenizer_{lang_src}.json'))
     tokenizer_tgt.save(str(Path(train_path) / f'tokenizer_{lang_tgt}.json'))
     tokenizer_tgt.save(str(Path(valid_path) / f'tokenizer_{lang_tgt}.json'))

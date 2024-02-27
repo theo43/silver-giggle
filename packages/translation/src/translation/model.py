@@ -111,12 +111,15 @@ class MultiHeadAttentionBlock(nn.Module):
 
         # (batch, seq_len, d_model) --> (batch, seq_len, d_model, h, d_k)
         # --> (batch, h, seq_len, d_k)
-        query = query.view(query.shape[0], query.shape[1], self.h,
-                           self.d_k).transpose(1, 2)
-        key = key.view(key.shape[0], key.shape[1], self.h, self.d_k).transpose(
-            1, 2)
-        value = value.view(value.shape[0], value.shape[1], self.h,
-                           self.d_k).transpose(1, 2)
+        query = query.view(
+            query.shape[0], query.shape[1], self.h, self.d_k
+        ).transpose(1, 2)
+        key = key.view(
+            key.shape[0], key.shape[1], self.h, self.d_k
+        ).transpose(1, 2)
+        value = value.view(
+            value.shape[0], value.shape[1], self.h, self.d_k
+        ).transpose(1, 2)
 
         x, self.attention_scores = MultiHeadAttentionBlock.attention(
             query,
@@ -128,8 +131,9 @@ class MultiHeadAttentionBlock(nn.Module):
 
         # (batch, h, seq_len, d_k) --> (batch, seq_len, h, d_k)
         # --> (batch, seq_len, d_model)
-        x = x.transpose(1, 2).contiguous().view(x.shape[0], -1,
-                                                self.h * self.d_k)
+        x = x.transpose(1, 2).contiguous().view(
+            x.shape[0], -1, self.h * self.d_k
+        )
 
         # (batch, seq_len, d_model) --> (batch, seq_len, d_model)
         return self.w_o(x)
@@ -160,11 +164,8 @@ class EncoderBlock(nn.Module):
         ])
 
     def forward(self, x, src_mask):
-        x = self.residual_connections[0](x,
-                                         lambda x: self.self_attention_block(x,
-                                                                             x,
-                                                                             x,
-                                                                             src_mask))
+        x = self.residual_connections[0](
+            x, lambda x: self.self_attention_block(x, x, x, src_mask))
         x = self.residual_connections[1](x, self.feed_forward_block)
         return x
 
@@ -370,11 +371,13 @@ def build_transformer(
     # Create encoder blocks
     encoder_blocks = []
     for _ in range(N):
-        encoder_self_attention_block = MultiHeadAttentionBlock(d_model, h,
-                                                               dropout)
+        encoder_self_attention_block = MultiHeadAttentionBlock(
+            d_model, h, dropout
+        )
         feed_forward_block = FeedForwardBlock(d_model, d_ff, dropout)
-        encoder_block = EncoderBlock(encoder_self_attention_block,
-                                     feed_forward_block, dropout)
+        encoder_block = EncoderBlock(
+            encoder_self_attention_block, feed_forward_block, dropout
+        )
         encoder_blocks.append(encoder_block)
 
     # Create decoder blocks
@@ -419,3 +422,14 @@ def build_transformer(
             nn.init.xavier_uniform_(p)
 
     return transformer
+
+
+def get_model(config: dict, vocab_src_len, vocab_tgt_len):
+    model = build_transformer(
+        vocab_src_len,
+        vocab_tgt_len,
+        config['seq_len'],
+        config['seq_len'],
+        config['d_model']
+    )
+    return model
