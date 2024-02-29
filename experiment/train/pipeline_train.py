@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
     # Define the whole pipeline
     pipeline = Pipeline(
-        name='MachineTranslationPipeline2',
+        name='MachineTranslationPipeline3',
         parameters=[
             param_input_data
         ],

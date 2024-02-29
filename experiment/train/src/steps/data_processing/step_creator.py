@@ -63,7 +63,7 @@ def create_data_processing_step(
         ],
         code=str(entrypoint_path),
         cache_config=CacheConfig(
-            enable_caching=True,
+            enable_caching=False,
             expire_after='10d'
         )
     )
