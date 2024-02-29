@@ -73,11 +73,13 @@ if __name__ == '__main__':
         valid_ds, batch_size=1, shuffle=True
     )
 
-    train_path = f'{base_dir}/train'
+    train_path = f'{base_dir}/output/train'
+    Path(train_path).mkdir(parents=True, exist_ok=True)
     with open(str(Path(train_path) / 'train_dataloader.pickle'), 'wb') as f:
         pickle.dump(train_dataloader, f)
     
-    valid_path = f'{base_dir}/valid'
+    valid_path = f'{base_dir}/output/valid'
+    Path(valid_path).mkdir(parents=True, exist_ok=True)
     with open(str(Path(valid_path) / 'valid_dataloader.pickle'), 'wb') as f:
         pickle.dump(valid_dataloader, f)
     

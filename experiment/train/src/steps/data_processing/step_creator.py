@@ -33,6 +33,7 @@ def create_data_processing_step(
 
     base_path = Path(__file__).resolve().parent
     entrypoint_path = base_path / 'entrypoint.py'
+    processing_path = '/opt/ml/processing'
 
     step_data_process = ProcessingStep(
         name='DataProcessing',
@@ -40,17 +41,17 @@ def create_data_processing_step(
         inputs=[
             ProcessingInput(
                 source=param_input_data,
-                destination='/opt/ml/processing/input'
+                destination=f'{processing_path}/input'
             )
         ],
         outputs=[
             ProcessingOutput(
                 output_name='train',
-                source='/opt/ml/processing/train'
+                source=f'{processing_path}/output/train'
             ),
             ProcessingOutput(
                 output_name='valid',
-                source='/opt/ml/processing/valid'
+                source=f'{processing_path}/output/valid'
             )
         ],
         code=str(entrypoint_path),
