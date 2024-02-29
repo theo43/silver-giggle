@@ -92,7 +92,7 @@ if __name__ == '__main__':
 
     # Define the whole pipeline
     pipeline = Pipeline(
-        name='TranslationPipeline',
+        name='MachineTranslationPipeline',
         parameters=[
             param_input_data
         ],
