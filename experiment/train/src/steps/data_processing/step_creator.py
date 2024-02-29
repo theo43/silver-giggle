@@ -47,11 +47,13 @@ def create_data_processing_step(
         outputs=[
             ProcessingOutput(
                 output_name='train',
-                source=f'{processing_path}/output/train'
+                source=f'{processing_path}/output/train',
+                destination=f's3://{s3_bucket_name}/datasets/translation/processed/train'
             ),
             ProcessingOutput(
                 output_name='valid',
-                source=f'{processing_path}/output/valid'
+                source=f'{processing_path}/output/valid',
+                destination=f's3://{s3_bucket_name}/datasets/translation/processed/valid'
             )
         ],
         code=str(entrypoint_path),
