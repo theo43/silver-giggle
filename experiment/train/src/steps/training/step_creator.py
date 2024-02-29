@@ -15,7 +15,8 @@ def create_training_step(
     instance_type: str,
     instance_count: int,
     image_uri,
-    train_data
+    train_data,
+    tokenizers_path
 ):
     output_path = f's3://{s3_bucket_name}/models/estimator-models'
     estimator = Estimator(
@@ -31,10 +32,16 @@ def create_training_step(
     train_input = TrainingInput(
         s3_data=train_data
     )
+    tokenizers_path = TrainingInput(
+        s3_data=tokenizers_path
+    )
     step_train = TrainingStep(
         name='TrainingStep',
         estimator=estimator,
-        inputs={'training': train_input},
+        inputs={
+            'training': train_input,
+            'tokenizers': tokenizers_path
+        },
         cache_config=CacheConfig(
             enable_caching=True,
             expire_after='10d'

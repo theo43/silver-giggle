@@ -25,10 +25,19 @@ if __name__ == '__main__':
         default=os.environ['SM_CHANNEL_TRAINING']
     )
     parser.add_argument(
+        '--tokenizers', type=str,
+        default=os.environ['SM_CHANNEL_TOKENIZERS']
+    )
+    parser.add_argument(
         '--model_dir', type=str,
         default=os.environ['SM_MODEL_DIR']
     )
     args = parser.parse_args()
+
+    # Create config
+    config = get_config()
+    lang_src = config['lang_src']
+    lang_tgt = config['lang_tgt']
 
     # Define device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -37,15 +46,16 @@ if __name__ == '__main__':
     # Load train dataloader and tokenizers
     with open(str(Path(args.train) / 'train_dataloader.pkl'), 'rb') as f:
         train_dataloader = pickle.load(f)
-    with open(str(Path(args.train) / 'tokenizer_src.pkl'), 'rb') as f:
+    # with open(str(Path(args.train) / 'tokenizer_src.pkl'), 'rb') as f:
+    #     tokenizer_src = pickle.load(f)
+    # with open(str(Path(args.train) / 'tokenizer_tgt.pkl'), 'rb') as f:
+    #     tokenizer_tgt = pickle.load(f)
+    with open(str(Path(args.tokenizers) / f'tokenizer_{lang_src}.pkl'), 'rb') as f:
         tokenizer_src = pickle.load(f)
-    with open(str(Path(args.train) / 'tokenizer_tgt.pkl'), 'rb') as f:
+    with open(str(Path(args.tokenizers) / f'tokenizer_{lang_tgt}.pkl'), 'rb') as f:
         tokenizer_tgt = pickle.load(f)
     
     warnings.filterwarnings('ignore')
-
-    # Create config
-    config = get_config()
 
     # Create model
     model = get_model(

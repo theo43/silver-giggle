@@ -74,7 +74,10 @@ if __name__ == '__main__':
 
     # Training step
     train_data = step_data_process.properties.ProcessingOutputConfig.Outputs[
-        'train'
+        'train_data'
+    ].S3Output.S3Uri
+    tokenizers_path = step_data_process.properties.ProcessingOutputConfig.Outputs[
+        'tokenizers'
     ].S3Output.S3Uri
 
     step_train = create_training_step(
@@ -84,7 +87,8 @@ if __name__ == '__main__':
         instance_type,
         instance_count,
         image_ecr_uri,
-        train_data
+        train_data,
+        tokenizers_path
     )
 
     # Evaluation step

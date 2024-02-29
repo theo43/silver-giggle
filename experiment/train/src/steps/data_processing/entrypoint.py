@@ -83,7 +83,7 @@ if __name__ == '__main__':
     with open(str(Path(valid_path) / 'valid_dataloader.pickle'), 'wb') as f:
         pickle.dump(valid_dataloader, f)
     
-    tokenizer_src.save(str(Path(train_path) / f'tokenizer_{lang_src}.json'))
-    tokenizer_src.save(str(Path(valid_path) / f'tokenizer_{lang_src}.json'))
-    tokenizer_tgt.save(str(Path(train_path) / f'tokenizer_{lang_tgt}.json'))
-    tokenizer_tgt.save(str(Path(valid_path) / f'tokenizer_{lang_tgt}.json'))
+    tokenizers_path = f'{base_dir}/output/tokenizers'
+    Path(tokenizers_path).mkdir(parents=True, exist_ok=True)
+    tokenizer_src.save(str(Path(tokenizers_path) / f'tokenizer_{lang_src}.json'))
+    tokenizer_tgt.save(str(Path(tokenizers_path) / f'tokenizer_{lang_tgt}.json'))

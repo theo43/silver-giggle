@@ -46,14 +46,19 @@ def create_data_processing_step(
         ],
         outputs=[
             ProcessingOutput(
-                output_name='train',
-                source=f'{processing_path}/output/train',
-                destination=f's3://{s3_bucket_name}/datasets/translation/processed/train'
+                output_name='train_data',
+                source=f'{processing_path}/output/train/train_dataloader.pickle',
+                destination=f's3://{s3_bucket_name}/datasets/translation/processed/train/train_dataloader.pickle'
             ),
             ProcessingOutput(
-                output_name='valid',
-                source=f'{processing_path}/output/valid',
-                destination=f's3://{s3_bucket_name}/datasets/translation/processed/valid'
+                output_name='valid_data',
+                source=f'{processing_path}/output/valid/valid_dataloader.pickle',
+                destination=f's3://{s3_bucket_name}/datasets/translation/processed/valid/valid_dataloader.pickle'
+            ),
+            ProcessingOutput(
+                output_name='tokenizers',
+                source=f'{processing_path}/output/tokenizers/',
+                destination=f's3://{s3_bucket_name}/datasets/translation/processed/tokenizers/'
             )
         ],
         code=str(entrypoint_path),
