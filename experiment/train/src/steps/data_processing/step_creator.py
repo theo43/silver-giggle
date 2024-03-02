@@ -1,6 +1,7 @@
 from sagemaker.processing import (
-    ProcessingInput, ProcessingOutput, Processor
+    ProcessingInput, ProcessingOutput, FrameworkProcessor
 )
+from sagemaker.sklearn import SKLearn
 from sagemaker.workflow.parameters import (
     ParameterString
 )
@@ -22,8 +23,10 @@ def create_data_processing_step(
         name="InputDataTranslation",
         default_value=s3_data_uri,
     )
-    processor_data = Processor(
-        image_uri=image_uri,
+    
+    processor = FrameworkProcessor(
+        estimator_cls=SKLearn,
+        py_version='py3',
         instance_type='ml.t3.medium',
         instance_count=instance_count,
         base_job_name='data-processing-step',
@@ -37,7 +40,7 @@ def create_data_processing_step(
 
     step_data_process = ProcessingStep(
         name='DataProcessing',
-        processor=processor_data,
+        processor=processor,
         inputs=[
             ProcessingInput(
                 source=param_input_data,
@@ -62,6 +65,7 @@ def create_data_processing_step(
             )
         ],
         code=str(entrypoint_path),
+        source_dir=str(base_path),
         cache_config=CacheConfig(
             enable_caching=False,
             expire_after='10d'
