@@ -26,6 +26,7 @@ def create_data_processing_step(
     
     processor = FrameworkProcessor(
         estimator_cls=SKLearn,
+        framework_version='0.23-1',
         py_version='py3',
         instance_type='ml.t3.medium',
         instance_count=instance_count,
