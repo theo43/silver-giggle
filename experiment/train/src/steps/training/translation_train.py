@@ -11,22 +11,102 @@ from tqdm import tqdm
 import warnings
 from torch.utils.tensorboard import SummaryWriter
 
+def greedy_decode(
+    model,
+    source,
+    source_mask,
+    tokenizer_src,
+    tokenizer_tgt,
+    max_len,
+    device
+):
+    sos_id = tokenizer_tgt.token_to_id('[SOS]')
+    eos_id = tokenizer_tgt.token_to_id('[EOS]')
 
-# def run_validation(
-#     model, validation_ds, tokenizer_src, tokenizer_tgt, max_len,
-#     device, print_msg, global_state, writer, num_examples=2
-# ):
-#     model.eval()
-#     count = 0
-#     source_texts = []
-#     expected = []
-#     predicted = []
+    # Precompute the encoder output and reuse it
+    # for every token we get from decoder
+    encoder_output = model.encode(source, source_mask)
+    
+    # Initialize the decoder input with SOS token
+    decoder_input = torch.empty(1,1).fill_(sos_id).type_as(source).to(device)
+    while True:
+        if decoder_input.size(1) > max_len:
+            break
 
-#     # Size of the control window (default value)
-#     console_width = 80
+        # Build mask for the decoder input
+        decoder_mask = causal_mask(decoder_input.size(1)).type_as(source).to(device)
 
-#     with torch.no_grad():
-        
+        # Calculate output of decoder
+        out = model.decode(encoder_output, source_mask, decoder_input, decoder_mask)
+
+        # Get next token
+        prob = model.project(out[:,-1])
+        # Select the token with the highest probability
+        _, next_word = torch.max(prob, dim=1)
+        decoder_input = torch.cat([
+            decoder_input,
+            torch.empty(1,1).type_as(source).fill_(next_word.item()).to(device)
+        ], dim=1)
+
+        if next_word == eos_id:
+            break
+
+        return decoder_input.squeeze(0)
+
+def run_validation(
+    model,
+    validation_ds,
+    tokenizer_src,
+    tokenizer_tgt,
+    max_len,
+    device,
+    print_msg,
+    global_state,
+    writer,
+    num_examples=2
+):
+    model.eval()
+    count = 0
+    source_texts = []
+    expected = []
+    predicted = []
+
+    # Size of the control window (default value)
+    console_width = 80
+
+    with torch.no_grad():
+        for batch in validation_ds:
+            count += 1
+            # (batch, seq_len)
+            encoder_input = batch['encoder_input'].to(device)
+            encoder_mask = batch['encoder_mask'].to(device)
+
+            assert encoder_input.size(0) == 1, 'Batch size must be 1'
+
+            model_output = greedy_decode(
+                model, encoder_input, encoder_mask, tokenizer_src,
+                tokenizer_tgt, max_len, device
+            )
+
+            source_text = batch['src_text'][0]
+            target_text = batch['tgt_text'][0]
+            model_out_text = tokenizer_tgt.decode(
+                model_output.detach().cpu().numpy()
+            )
+
+            source_texts.append(source_text)
+            expected.append(target_text)
+            predicted.append(model_out_text)
+
+            # Print to console
+            print_msg('-'*console_width)
+            print_msg(f'Source: {source_text}')
+            print_msg(f'Target: {target_text}')
+            print_msg(f'Predicted: {model_out_text}')
+
+            if count >= num_examples:
+                break
+
 
 def get_ds(config):
     ds_raw = load_dataset(
@@ -188,6 +268,18 @@ def train_model(config: dict):
             # Update the weights
             optimizer.step()
             optimizer.zero_grad()
+
+            run_validation(
+                model,
+                val_dataloader,
+                tokenizer_src,
+                tokenizer_tgt,
+                config['seq_len'],
+                device,
+                print,
+                global_step,
+                writer
+            )
 
             global_step += 1
 

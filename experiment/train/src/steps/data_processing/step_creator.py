@@ -35,13 +35,7 @@ def create_data_processing_step(
         sagemaker_session=session,
     )
 
-    base_path = Path(__file__).resolve().parent
-    entrypoint_path = base_path / 'entrypoint.py'
-    processing_path = '/opt/ml/processing'
-
-    step_data_process = ProcessingStep(
-        name='DataProcessing',
-        processor=processor,
+    step_args = processor.run(
         inputs=[
             ProcessingInput(
                 source=param_input_data,
@@ -52,21 +46,30 @@ def create_data_processing_step(
             ProcessingOutput(
                 output_name='train_data',
                 source=f'{processing_path}/output/train/train_dataloader.pickle',
-                destination=f's3://{s3_bucket_name}/datasets/translation/processed/train/train_dataloader.pickle'
+                # destination=f's3://{s3_bucket_name}/datasets/translation/processed/train/train_dataloader.pickle'
             ),
             ProcessingOutput(
                 output_name='valid_data',
                 source=f'{processing_path}/output/valid/valid_dataloader.pickle',
-                destination=f's3://{s3_bucket_name}/datasets/translation/processed/valid/valid_dataloader.pickle'
+                # destination=f's3://{s3_bucket_name}/datasets/translation/processed/valid/valid_dataloader.pickle'
             ),
             ProcessingOutput(
                 output_name='tokenizers',
                 source=f'{processing_path}/output/tokenizers/',
-                destination=f's3://{s3_bucket_name}/datasets/translation/processed/tokenizers/'
+                # destination=f's3://{s3_bucket_name}/datasets/translation/processed/tokenizers/'
             )
         ],
         code=str(entrypoint_path),
         source_dir=str(base_path),
+    )
+
+    base_path = Path(__file__).resolve().parent
+    entrypoint_path = base_path / 'entrypoint.py'
+    processing_path = '/opt/ml/processing'
+
+    step_data_process = ProcessingStep(
+        name='DataProcessing',
+        step_args=step_args,
         cache_config=CacheConfig(
             enable_caching=False,
             expire_after='10d'
