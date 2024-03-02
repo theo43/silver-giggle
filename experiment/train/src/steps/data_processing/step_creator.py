@@ -18,6 +18,10 @@ def create_data_processing_step(
     image_uri: str,
     instance_count: int,
 ):
+    base_path = Path(__file__).resolve().parent
+    entrypoint_path = base_path / 'entrypoint.py'
+    processing_path = '/opt/ml/processing'
+
     s3_data_uri = f's3://{s3_bucket_name}/datasets/translation/en-es_dataset.pickle'
     param_input_data = ParameterString(
         name="InputDataTranslation",
@@ -62,10 +66,6 @@ def create_data_processing_step(
         code=str(entrypoint_path),
         source_dir=str(base_path),
     )
-
-    base_path = Path(__file__).resolve().parent
-    entrypoint_path = base_path / 'entrypoint.py'
-    processing_path = '/opt/ml/processing'
 
     step_data_process = ProcessingStep(
         name='DataProcessing',
