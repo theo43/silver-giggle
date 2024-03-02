@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     if local:
         session = LocalPipelineSession()
-        session.config = {'local': {'local_code': True}}
+        # session.config = {'local': {'local_code': True}}
         role = args.role
         instance_count = 1
         instance_type = 'local'

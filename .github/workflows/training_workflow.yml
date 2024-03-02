@@ -118,6 +118,7 @@ jobs:
           cd ..
           python setup.py sdist bdist_wheel
           cp dist/*.whl ../../experiment/train/src/steps/data_processing/.
+          cp dist/*.whl ../../experiment/train/src/steps/training/.
 
       - name: Install Dependencies
         run: |

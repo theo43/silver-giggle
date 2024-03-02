@@ -1,6 +1,7 @@
 from sagemaker.processing import (
     ProcessingInput, ProcessingOutput, FrameworkProcessor
 )
+from sagemaker.dataset_definition.inputs import S3Input
 from sagemaker.sklearn import SKLearn
 from sagemaker.workflow.parameters import (
     ParameterString
@@ -23,10 +24,10 @@ def create_data_processing_step(
     processing_path = '/opt/ml/processing'
 
     s3_data_uri = f's3://{s3_bucket_name}/datasets/translation/en-es_dataset.pickle'
-    param_input_data = ParameterString(
-        name="InputDataTranslation",
-        default_value=s3_data_uri,
-    )
+    # param_input_data = ParameterString(
+    #     name="InputDataTranslation",
+    #     default_value=s3_data_uri,
+    # )
     
     processor = FrameworkProcessor(
         estimator_cls=SKLearn,
@@ -36,13 +37,14 @@ def create_data_processing_step(
         instance_count=instance_count,
         base_job_name='data-processing-step',
         role=role,
-        sagemaker_session=session,
+        # sagemaker_session=session,
     )
 
     step_args = processor.run(
         inputs=[
             ProcessingInput(
-                source=param_input_data,
+                # source=param_input_data,
+                s3_input=S3Input(s3_uri=s3_data_uri),
                 destination=f'{processing_path}/input'
             )
         ],
@@ -76,4 +78,4 @@ def create_data_processing_step(
         )
     )
 
-    return step_data_process, param_input_data
+    return step_data_process

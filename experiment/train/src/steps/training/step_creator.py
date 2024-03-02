@@ -1,9 +1,10 @@
 from sagemaker.workflow.steps import (
     TrainingStep, CacheConfig
 )
-from sagemaker.estimator import Estimator
+from sagemaker.processing import FrameworkProcessor
 from sagemaker.inputs import TrainingInput
 from pathlib import Path
+from sagemaker.pytorch import PyTorch
 
 BASE_PATH = Path(__file__).resolve().parent
 
@@ -19,16 +20,19 @@ def create_training_step(
     tokenizers_path
 ):
     output_path = f's3://{s3_bucket_name}/models/estimator-models'
-    estimator = Estimator(
-        image_uri=image_uri,
-        role=role,
-        instance_type=instance_type,
-        instance_count=instance_count,
-        source_dir=str(BASE_PATH),
+    
+    estimator = PyTorch(
         entry_point='entrypoint.py',
+        source_dir=str(BASE_PATH),
+        role=role,
+        instance_count=instance_count,
+        instance_type=instance_type,
+        framework_version='1.13.1',
+        py_version='py3',
         output_path=output_path,
         sagemaker_session=session
     )
+
     train_input = TrainingInput(
         s3_data=train_data
     )
