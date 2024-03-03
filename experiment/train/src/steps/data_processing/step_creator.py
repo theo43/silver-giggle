@@ -28,7 +28,7 @@ def create_data_processing_step(
         instance_count=instance_count,
         base_job_name='data-processing-step',
         role=role,
-        # sagemaker_session=session,
+        sagemaker_session=session,
     )
 
     step_args = processor.run(
