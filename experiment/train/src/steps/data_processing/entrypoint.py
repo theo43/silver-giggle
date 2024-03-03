@@ -14,9 +14,9 @@ if __name__ == '__main__':
     base_dir = '/opt/ml/processing'
     
     ds_raw = load_dataset(
-        "opus_books",
-        f"{lang_src}-{lang_tgt}",
-        split=f'train[:{config['download_size']}%]'
+        'opus_books',
+        f'{lang_src}-{lang_tgt}',
+        split=f'train[:{config["download_size"]}%]'
     )
     # Build tokenizer
     tokenizer_src = get_or_build_tokenizer(

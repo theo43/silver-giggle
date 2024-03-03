@@ -42,9 +42,9 @@ if __name__ == '__main__':
     lang_tgt = config['lang_tgt']
 
     ds_raw = load_dataset(
-        "opus_books",
-        f"{lang_src}-{lang_tgt}",
-        split=f'train[:{config['download_size']}%]'
+        'opus_books',
+        f'{lang_src}-{lang_tgt}',
+        split=f'train[:{config["download_size"]}%]'
     )
 
     # Define device
