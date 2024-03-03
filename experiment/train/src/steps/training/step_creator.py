@@ -4,6 +4,7 @@ from sagemaker.workflow.steps import (
 from sagemaker.processing import FrameworkProcessor
 from sagemaker.inputs import TrainingInput
 from pathlib import Path
+from sagemaker.estimator import Estimator
 from sagemaker.pytorch import PyTorch
 
 BASE_PATH = Path(__file__).resolve().parent
@@ -20,14 +21,13 @@ def create_training_step(
 ):
     output_path = f's3://{s3_bucket_name}/models/estimator-models'
     
-    estimator = PyTorch(
+    estimator = Estimator(
         entry_point='entrypoint.py',
         source_dir=str(BASE_PATH),
         role=role,
         instance_count=instance_count,
         instance_type=instance_type,
-        framework_version='1.13.1',
-        py_version='py3',
+        image_uri='763104351884.dkr.ecr.eu-north-1.amazonaws.com/pytorch-training:2.2.0-cpu-py310-ubuntu20.04-sagemaker',
         output_path=output_path,
         sagemaker_session=session
     )
