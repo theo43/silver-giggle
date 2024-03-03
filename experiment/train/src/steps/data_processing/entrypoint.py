@@ -1,5 +1,5 @@
 from pathlib import Path
-import pickle
+import torch
 from torch.utils.data import DataLoader, random_split
 from translation.dataset import BilingualDataset
 from translation.tokenizer import get_or_build_tokenizer
@@ -77,13 +77,11 @@ if __name__ == '__main__':
 
     train_path = f'{base_dir}/output/train'
     Path(train_path).mkdir(parents=True, exist_ok=True)
-    with open(str(Path(train_path) / 'train_dataloader.pickle'), 'wb') as f:
-        pickle.dump(train_dataloader, f)
+    torch.save(train_dataloader, str(Path(train_path) / 'train_dataloader.pkl'))
     
     valid_path = f'{base_dir}/output/valid'
     Path(valid_path).mkdir(parents=True, exist_ok=True)
-    with open(str(Path(valid_path) / 'valid_dataloader.pickle'), 'wb') as f:
-        pickle.dump(valid_dataloader, f)
+    torch.save(train_dataloader, str(Path(valid_path) / 'valid_dataloader.pkl'))
     
     tokenizers_path = f'{base_dir}/output/tokenizers'
     Path(tokenizers_path).mkdir(parents=True, exist_ok=True)

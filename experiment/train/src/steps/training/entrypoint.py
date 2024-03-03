@@ -8,6 +8,7 @@ import pickle
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import warnings
+from tokenizers import Tokenizer
 from translation.config import get_config
 from translation.model import get_model
 
@@ -44,16 +45,12 @@ if __name__ == '__main__':
     print(f'Using device {device}')
 
     # Load train dataloader and tokenizers
-    with open(str(Path(args.train) / 'train_dataloader.pkl'), 'rb') as f:
-        train_dataloader = pickle.load(f)
-    # with open(str(Path(args.train) / 'tokenizer_src.pkl'), 'rb') as f:
-    #     tokenizer_src = pickle.load(f)
-    # with open(str(Path(args.train) / 'tokenizer_tgt.pkl'), 'rb') as f:
-    #     tokenizer_tgt = pickle.load(f)
-    with open(str(Path(args.tokenizers) / f'tokenizer_{lang_src}.pkl'), 'rb') as f:
-        tokenizer_src = pickle.load(f)
-    with open(str(Path(args.tokenizers) / f'tokenizer_{lang_tgt}.pkl'), 'rb') as f:
-        tokenizer_tgt = pickle.load(f)
+    train_dataloader = torch.load(
+        str(Path(args.train) / 'train_dataloader.pkl'))
+    tokenizer_src = Tokenizer.from_file(
+        str(Path(args.tokenizers) / f'tokenizer_{lang_src}.json'))
+    tokenizer_tgt = Tokenizer.from_file(
+        str(Path(args.tokenizers) / f'tokenizer_{lang_tgt}.json'))
     
     warnings.filterwarnings('ignore')
 
