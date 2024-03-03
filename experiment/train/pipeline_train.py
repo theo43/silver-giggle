@@ -42,7 +42,7 @@ if __name__ == '__main__':
         session = PipelineSession()
         role = get_execution_role()
         instance_count = 1
-        instance_type = 'ml.m5.large'
+        instance_type = 'ml.m5.2xlarge'
 
     # Data processing step
     step_data_process = create_data_processing_step(

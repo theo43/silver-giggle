@@ -5,6 +5,7 @@ def get_config():
     return {
         'batch_size': 8,
         'num_epochs': 2,
+        'download_size': 3,
         'lr': 10**-4,
         'seq_len': 350,
         'd_model': 512,

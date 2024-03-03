@@ -16,7 +16,7 @@ if __name__ == '__main__':
     ds_raw = load_dataset(
         "opus_books",
         f"{lang_src}-{lang_tgt}",
-        split='train[:3%]'
+        split=f'train[:{config['download_size']}%]'
     )
     # Build tokenizer
     tokenizer_src = get_or_build_tokenizer(
