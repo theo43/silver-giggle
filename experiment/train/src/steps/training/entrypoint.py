@@ -8,6 +8,7 @@ import pickle
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import warnings
+from datasets import load_dataset
 from tokenizers import Tokenizer
 from translation.config import get_config
 from translation.model import get_model
@@ -39,6 +40,12 @@ if __name__ == '__main__':
     config = get_config()
     lang_src = config['lang_src']
     lang_tgt = config['lang_tgt']
+
+    ds_raw = load_dataset(
+        "opus_books",
+        f"{lang_src}-{lang_tgt}",
+        split='train'
+    )
 
     # Define device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
