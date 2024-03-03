@@ -48,7 +48,6 @@ if __name__ == '__main__':
     step_data_process = create_data_processing_step(
         session,
         role,
-        s3_bucket_name,
         instance_count
     )
 

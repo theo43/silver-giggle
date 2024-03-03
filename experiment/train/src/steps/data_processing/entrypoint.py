@@ -12,9 +12,7 @@ if __name__ == '__main__':
     lang_src = config['lang_src']
     lang_tgt = config['lang_tgt']
     base_dir = '/opt/ml/processing'
-    # data_path = Path(base_dir) / 'input/en-es_dataset.pickle'
-    # with open(data_path, 'rb') as data:
-    #     ds_raw = pickle.load(data)
+    
     ds_raw = load_dataset(
         "opus_books",
         f"{lang_src}-{lang_tgt}",

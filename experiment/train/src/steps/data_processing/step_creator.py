@@ -1,5 +1,5 @@
 from sagemaker.processing import (
-    ProcessingInput, ProcessingOutput, FrameworkProcessor
+    ProcessingOutput, FrameworkProcessor
 )
 from sagemaker.workflow.steps import (
     ProcessingStep, CacheConfig
@@ -11,14 +11,10 @@ from pathlib import Path
 def create_data_processing_step(
     session: str,
     role: str,
-    s3_bucket_name: str,
     instance_count: int,
 ):
     base_path = Path(__file__).resolve().parent
-    # entrypoint_path = base_path / 'entrypoint.py'
     processing_path = '/opt/ml/processing'
-
-    s3_data_uri = f's3://{s3_bucket_name}/datasets/translation/en-es_dataset.pickle'
     
     processor = FrameworkProcessor(
         estimator_cls=PyTorch,
@@ -32,28 +28,18 @@ def create_data_processing_step(
     )
 
     step_args = processor.run(
-        inputs=[
-            ProcessingInput(
-                input_name='input_data',
-                source=s3_data_uri,
-                destination=f'{processing_path}/input'
-            )
-        ],
         outputs=[
             ProcessingOutput(
                 output_name='train_data',
-                source=f'{processing_path}/output/train/train_dataloader.pickle',
-                # destination=f's3://{s3_bucket_name}/datasets/translation/processed/train/train_dataloader.pickle'
+                source=f'{processing_path}/output/train/'
             ),
             ProcessingOutput(
                 output_name='valid_data',
-                source=f'{processing_path}/output/valid/valid_dataloader.pickle',
-                # destination=f's3://{s3_bucket_name}/datasets/translation/processed/valid/valid_dataloader.pickle'
+                source=f'{processing_path}/output/valid/'
             ),
             ProcessingOutput(
                 output_name='tokenizers',
-                source=f'{processing_path}/output/tokenizers/',
-                # destination=f's3://{s3_bucket_name}/datasets/translation/processed/tokenizers/'
+                source=f'{processing_path}/output/tokenizers/'
             )
         ],
         code='entrypoint.py',
