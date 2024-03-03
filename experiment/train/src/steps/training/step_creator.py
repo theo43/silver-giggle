@@ -15,7 +15,6 @@ def create_training_step(
     s3_bucket_name: str,
     instance_type: str,
     instance_count: int,
-    image_uri,
     train_data,
     tokenizers_path
 ):

@@ -1,14 +1,10 @@
 from sagemaker.processing import (
     ProcessingInput, ProcessingOutput, FrameworkProcessor
 )
-from sagemaker.dataset_definition.inputs import S3Input
-from sagemaker.sklearn import SKLearn
-from sagemaker.workflow.parameters import (
-    ParameterString
-)
 from sagemaker.workflow.steps import (
     ProcessingStep, CacheConfig
 )
+from sagemaker.pytorch import PyTorch
 from pathlib import Path
 
 
@@ -16,23 +12,18 @@ def create_data_processing_step(
     session: str,
     role: str,
     s3_bucket_name: str,
-    image_uri: str,
     instance_count: int,
 ):
     base_path = Path(__file__).resolve().parent
-    entrypoint_path = base_path / 'entrypoint.py'
+    # entrypoint_path = base_path / 'entrypoint.py'
     processing_path = '/opt/ml/processing'
 
     s3_data_uri = f's3://{s3_bucket_name}/datasets/translation/en-es_dataset.pickle'
-    # param_input_data = ParameterString(
-    #     name="InputDataTranslation",
-    #     default_value=s3_data_uri,
-    # )
     
     processor = FrameworkProcessor(
-        estimator_cls=SKLearn,
-        framework_version='0.23-1',
-        py_version='py3',
+        estimator_cls=PyTorch,
+        framework_version='2.2',
+        image_uri='763104351884.dkr.ecr.eu-north-1.amazonaws.com/pytorch-training:2.2.0-cpu-py310-ubuntu20.04-sagemaker',
         instance_type='ml.t3.medium',
         instance_count=instance_count,
         base_job_name='data-processing-step',
@@ -43,8 +34,8 @@ def create_data_processing_step(
     step_args = processor.run(
         inputs=[
             ProcessingInput(
-                # source=param_input_data,
-                s3_input=S3Input(s3_uri=s3_data_uri),
+                input_name='input_data',
+                source=s3_data_uri,
                 destination=f'{processing_path}/input'
             )
         ],
@@ -65,7 +56,7 @@ def create_data_processing_step(
                 # destination=f's3://{s3_bucket_name}/datasets/translation/processed/tokenizers/'
             )
         ],
-        code=str(entrypoint_path),
+        code='entrypoint.py',
         source_dir=str(base_path),
     )
 

@@ -23,31 +23,12 @@ if __name__ == '__main__':
         '--role', type=str, help='AWS role'
     )
     parser.add_argument(
-        '--image-uri', type=str, help='Training image URI'
-    )
-    parser.add_argument(
-        '--image-ecr-uri', type=str, help='Training image ECR URI'
-    )
-    parser.add_argument(
         '--local', type=bool, default=False,
         help='Local mode execution'
-    )
-    parser.add_argument(
-        '--subnet-id1', type=str, help='Subnet id1'
-    )
-    parser.add_argument(
-        '--subnet-id2', type=str, help='Subnet id2'
-    )
-    parser.add_argument(
-        '--subnet-id3', type=str, help='Subnet id3'
-    )
-    parser.add_argument(
-        '--security-group-id', type=str, help='Security group id'
     )
 
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
-    image_ecr_uri = args.image_ecr_uri
     local = args.local
 
 
@@ -64,11 +45,10 @@ if __name__ == '__main__':
         instance_type = 'ml.m5.large'
 
     # Data processing step
-    step_data_process, param_input_data = create_data_processing_step(
+    step_data_process = create_data_processing_step(
         session,
         role,
         s3_bucket_name,
-        image_ecr_uri,
         instance_count
     )
 
@@ -86,7 +66,6 @@ if __name__ == '__main__':
         s3_bucket_name,
         instance_type,
         instance_count,
-        image_ecr_uri,
         train_data,
         tokenizers_path
     )
@@ -97,9 +76,9 @@ if __name__ == '__main__':
     # Define the whole pipeline
     pipeline = Pipeline(
         name='MachineTranslationPipeline3',
-        parameters=[
-            param_input_data
-        ],
+        # parameters=[
+        #     param_input_data
+        # ],
         steps=[
             step_data_process,
             step_train,
