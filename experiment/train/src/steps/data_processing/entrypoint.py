@@ -18,7 +18,7 @@ if __name__ == '__main__':
     ds_raw = load_dataset(
         "opus_books",
         f"{lang_src}-{lang_tgt}",
-        split='train'
+        split='train[:3%]'
     )
     # Build tokenizer
     tokenizer_src = get_or_build_tokenizer(
@@ -34,9 +34,6 @@ if __name__ == '__main__':
     train_ds_raw, valid_ds_raw = random_split(
         ds_raw, [train_ds_size, valid_ds_size]
     )
-
-    # TODO: delete when pipeline functional, smoke train
-    train_ds_raw = train_ds_raw.select(range(1000))
 
     train_ds = BilingualDataset(
         train_ds_raw,
