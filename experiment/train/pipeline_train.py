@@ -60,7 +60,7 @@ if __name__ == '__main__':
         role = get_execution_role()
         instance_count = 1
         instance_type_cpu = 'ml.t3.medium'
-        instance_type_gpu = 'ml.p3.8xlarge'
+        instance_type_gpu = 'ml.p3.2xlarge'
 
     # Data processing step
     step_data_process = create_data_processing_step(

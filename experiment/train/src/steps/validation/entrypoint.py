@@ -1,9 +1,7 @@
-import json
 import torch
-import torch.nn as nn
 from pathlib import Path
 from datasets import load_dataset
-from torchmetrics.text import BLEUScore
+from torchmetrics.text import BLEUScore, CharErrorRate, WordErrorRate
 from tokenizers import Tokenizer
 from translation.config import get_config
 from translation.model import get_model
@@ -58,6 +56,10 @@ if __name__ == '__main__':
     config = get_config()
     lang_src = config['lang_src']
     lang_tgt = config['lang_tgt']
+    
+    # Define device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'Using device {device}')
 
     ds_raw = load_dataset(
         'opus_books',
@@ -67,17 +69,18 @@ if __name__ == '__main__':
 
     # Load valid dataloader, tokenizers and model weights
     model_checkpoint = torch.load(
-        str(Path(processing_dir) / '/model/weights/tmodel_02.pt'))
+        str(Path(processing_dir) / '/model/weights/tmodel_02.pt'),
+        map_location=device
+    )
     valid_dataloader = torch.load(
-        str(Path(processing_dir) / '/valid/valid_dataloader.pkl'))
+        str(Path(processing_dir) / '/valid/valid_dataloader.pkl')
+    )
     tokenizer_src = Tokenizer.from_file(
-        str(Path(processing_dir) / f'/tokenizers/tokenizer_{lang_src}.json'))
+        str(Path(processing_dir) / f'/tokenizers/tokenizer_{lang_src}.json')
+    )
     tokenizer_tgt = Tokenizer.from_file(
-        str(Path(processing_dir) / f'/tokenizers/tokenizer_{lang_tgt}.json'))
-
-    # Define device
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f'Using device {device}')
+        str(Path(processing_dir) / f'/tokenizers/tokenizer_{lang_tgt}.json')
+    )
 
     # Create model, load previously trained weights and set to eval mode
     model = get_model(
@@ -126,3 +129,12 @@ if __name__ == '__main__':
     bleu_score = metric(predicted, expected)
     print(f'BLEU score: {bleu_score.numpy().tolist():.3f}')
     
+    # Compute Char Error Rate
+    metric = CharErrorRate()
+    cer = metric(predicted, expected)
+    print(f'Char Error Rate: {cer.numpy().tolist():.3f}')
+
+    # Compute Word Error Rate
+    metric = WordErrorRate()
+    wer = metric(predicted, expected)
+    print(f'Word Error Rate: {wer.numpy().tolist():.3f}')
