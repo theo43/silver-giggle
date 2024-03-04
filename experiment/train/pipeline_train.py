@@ -10,6 +10,11 @@ from src.steps.data_processing.step_creator import (
 from src.steps.training.step_creator import (
     create_training_step
 )
+from src.steps.validation.step_creator import (
+    create_validation_step
+)
+
+BASE_IMAGE_URL = '763104351884.dkr.ecr.eu-north-1.amazonaws.com'
 
 
 if __name__ == '__main__':
@@ -26,28 +31,43 @@ if __name__ == '__main__':
         '--local', type=bool, default=False,
         help='Local mode execution'
     )
+    parser.add_argument(
+        '--image-uri-valid', type=str,
+        help='Image for validation',
+        default=f'{BASE_IMAGE_URL}/pytorch-training:2.2.0-cpu-py310-ubuntu20.04-sagemaker'
+    )
+    parser.add_argument(
+        '--image-uri-train', type=str,
+        help='Image for train',
+        default=f'{BASE_IMAGE_URL}/pytorch-training:2.2.0-cpu-py310-ubuntu20.04-sagemaker'
+    )
 
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
     local = args.local
-
+    image_uri_valid = args.image_uri_valid
+    image_uri_train = args.image_uri_train
 
     if local:
         session = LocalPipelineSession()
-        # session.config = {'local': {'local_code': True}}
+        session.config = {'local': {'local_code': True}}
         role = args.role
         instance_count = 1
-        instance_type = 'local'
+        instance_type_cpu = 'local'
+        instance_type_gpu = 'local'
     else:
         session = PipelineSession()
         role = get_execution_role()
         instance_count = 1
-        instance_type = 'ml.m5.2xlarge'
+        instance_type_cpu = 'ml.t3.medium'
+        instance_type_gpu = 'ml.p3.8xlarge'
 
     # Data processing step
     step_data_process = create_data_processing_step(
         session,
         role,
+        image_uri_valid,
+        instance_type_cpu,
         instance_count
     )
 
@@ -63,25 +83,36 @@ if __name__ == '__main__':
         session,
         role,
         s3_bucket_name,
-        instance_type,
+        image_uri_train,
+        instance_type_gpu,
         instance_count,
         train_data,
         tokenizers_path
     )
 
     # Evaluation step
-    # TODO
+    valid_data = step_data_process.properties.ProcessingOutputConfig.Outputs[
+        'valid_data'
+    ].S3Output.S3Uri
+    model_path = step_train.properties.ModelArtifacts.S3ModelArtifacts
+    step_validation = create_validation_step(
+        session,
+        role,
+        image_uri_valid,
+        instance_type_cpu,
+        instance_count,
+        valid_data,
+        model_path,
+        tokenizers_path
+    )
 
     # Define the whole pipeline
     pipeline = Pipeline(
         name='MachineTranslationPipeline3',
-        # parameters=[
-        #     param_input_data
-        # ],
         steps=[
             step_data_process,
             step_train,
-            # step_eval
+            step_validation
         ],
         sagemaker_session=session
     )

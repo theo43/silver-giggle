@@ -1,11 +1,7 @@
-from sagemaker.workflow.steps import (
-    TrainingStep, CacheConfig
-)
-from sagemaker.processing import FrameworkProcessor
+from sagemaker.workflow.steps import TrainingStep, CacheConfig
 from sagemaker.inputs import TrainingInput
 from pathlib import Path
 from sagemaker.estimator import Estimator
-from sagemaker.pytorch import PyTorch
 
 BASE_PATH = Path(__file__).resolve().parent
 
@@ -14,6 +10,7 @@ def create_training_step(
     session: str,
     role: str,
     s3_bucket_name: str,
+    image_uri_train: str,
     instance_type: str,
     instance_count: int,
     train_data,
@@ -27,7 +24,7 @@ def create_training_step(
         role=role,
         instance_count=instance_count,
         instance_type=instance_type,
-        image_uri='763104351884.dkr.ecr.eu-north-1.amazonaws.com/pytorch-training:2.2.0-cpu-py310-ubuntu20.04-sagemaker',
+        image_uri=image_uri_train,
         output_path=output_path,
         sagemaker_session=session
     )

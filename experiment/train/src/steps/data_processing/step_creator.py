@@ -11,6 +11,8 @@ from pathlib import Path
 def create_data_processing_step(
     session: str,
     role: str,
+    image_uri_valid: str,
+    instance_type: str,
     instance_count: int,
 ):
     base_path = Path(__file__).resolve().parent
@@ -19,8 +21,8 @@ def create_data_processing_step(
     processor = FrameworkProcessor(
         estimator_cls=PyTorch,
         framework_version='2.2',
-        image_uri='763104351884.dkr.ecr.eu-north-1.amazonaws.com/pytorch-training:2.2.0-cpu-py310-ubuntu20.04-sagemaker',
-        instance_type='ml.t3.medium',
+        image_uri=image_uri_valid,
+        instance_type=instance_type,
         instance_count=instance_count,
         base_job_name='data-processing-step',
         role=role,
@@ -50,7 +52,7 @@ def create_data_processing_step(
         name='DataProcessing',
         step_args=step_args,
         cache_config=CacheConfig(
-            enable_caching=False,
+            enable_caching=True,
             expire_after='10d'
         )
     )

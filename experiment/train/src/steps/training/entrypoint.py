@@ -1,10 +1,8 @@
-import boto3
 import torch
 import torch.nn as nn
 from pathlib import Path
 import os
 import argparse
-import pickle
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import warnings
@@ -12,12 +10,6 @@ from datasets import load_dataset
 from tokenizers import Tokenizer
 from translation.config import get_config
 from translation.model import get_model
-
-
-SEQ_LENGTH = 100
-BATCH_SIZE = 64
-BUFFER_SIZE = 10000
-EPOCHS = 30
 
 
 if __name__ == '__main__':
@@ -75,13 +67,6 @@ if __name__ == '__main__':
     
     initial_epoch = 0
     global_step = 0
-    # if config['preload']:
-    #     model_filename = get_weights_file_path(config, config['preload'])
-    #     print(f'Preloading model {model_filename}')
-    #     state = torch.load(model_filename)
-    #     initial_epoch = state['epoch'] + 1
-    #     optimizer.load_state_dict(state['optimizer_state_dict'])
-    #     global_step = state['global_step']
     
     loss_fn = nn.CrossEntropyLoss(
         ignore_index=tokenizer_src.token_to_id('[PAD]'),
@@ -119,7 +104,8 @@ if __name__ == '__main__':
 
             label = batch['label'].to(device)  # (batch, seq_len)
 
-            # (batch, seq_len, tgt_vocab_size) --> (batch * seq_len, tgt_vocab_size)
+            # (batch, seq_len, tgt_vocab_size)
+            # --> (batch * seq_len, tgt_vocab_size)
             loss = loss_fn(
                 proj_output.view(-1, tokenizer_tgt.get_vocab_size()),
                 label.view(-1)
@@ -150,11 +136,6 @@ if __name__ == '__main__':
             'global_step': global_step
         }, model_local_path)
 
-    # Send model to S3
-    # TODO: do it later after model evaluation when we find way to calculate metrics
-    destination_path = 'models/estimator_models'
-    s3_client = boto3.client('s3')
-    bucket_name = args.model_dir.split('://')[1].split('/')[0]
-    s3_client.upload_file(
-        model_local_path, bucket_name, destination_path
-    )
+        print(f'Model saved at {model_local_path}')
+
+    print('Training finished')
