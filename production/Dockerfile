@@ -5,13 +5,13 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copy the requirements file to the working directory
-COPY requirements_production.txt .
+COPY ./production/requirements_production.txt .
 
 # Install the Python dependencies
 RUN pip install --no-cache-dir -r requirements_production.txt
 
 # Copy the code and model files to the working directory
-COPY . .
+COPY ./production/* .
 
 # Expose the port on which the FastAPI application will run
 EXPOSE 8000
