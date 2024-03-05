@@ -11,12 +11,10 @@ from pathlib import Path
 def create_validation_step(
     session: str,
     role: str,
-    image_uri_valid: str,
-    instance_type: str,
-    instance_count: int,
     valid_data,
     model_path,
-    tokenizers_path
+    tokenizers_path,
+    **kwargs
 ):
     base_path = Path(__file__).resolve().parent
     processing_path = '/opt/ml/processing'
@@ -24,9 +22,9 @@ def create_validation_step(
     processor = FrameworkProcessor(
         estimator_cls=PyTorch,
         framework_version='2.2',
-        image_uri=image_uri_valid,
-        instance_type=instance_type,
-        instance_count=instance_count,
+        image_uri=kwargs['image_uri'],
+        instance_type=kwargs['instance_type'],
+        instance_count=kwargs['instance_count'],
         base_job_name='data-processing-step',
         role=role,
         sagemaker_session=session,

@@ -10,11 +10,9 @@ def create_training_step(
     session: str,
     role: str,
     s3_bucket_name: str,
-    image_uri_train: str,
-    instance_type: str,
-    instance_count: int,
     train_data,
-    tokenizers_path
+    tokenizers_path,
+    **kwargs
 ):
     output_path = f's3://{s3_bucket_name}/models/estimator-models'
     
@@ -22,9 +20,9 @@ def create_training_step(
         entry_point='entrypoint.py',
         source_dir=str(BASE_PATH),
         role=role,
-        instance_count=instance_count,
-        instance_type='ml.p2.xlarge',
-        image_uri=image_uri_train,
+        instance_count=kwargs['instance_count'],
+        instance_type=kwargs['instance_type'],
+        image_uri=kwargs['image_uri'],
         output_path=output_path,
         sagemaker_session=session
     )
