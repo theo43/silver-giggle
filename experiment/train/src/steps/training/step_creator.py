@@ -23,7 +23,7 @@ def create_training_step(
         source_dir=str(BASE_PATH),
         role=role,
         instance_count=instance_count,
-        instance_type='g5.4xlarge',
+        instance_type='ml.p2.xlarge',
         image_uri=image_uri_train,
         output_path=output_path,
         sagemaker_session=session
