@@ -1,6 +1,7 @@
 */data/*
 */venv*
 .idea/
+*.whl
 */models/*
 
 # Byte-compiled / optimized / DLL files

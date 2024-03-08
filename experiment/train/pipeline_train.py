@@ -4,17 +4,22 @@ from sagemaker.workflow.pipeline_context import (
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker import get_execution_role
 import argparse
+import yaml
+from pathlib import Path
 from src.steps.data_processing.step_creator import (
     create_data_processing_step
 )
 from src.steps.training.step_creator import (
     create_training_step
 )
+from src.steps.validation.step_creator import (
+    create_validation_step
+)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='Text generation model training parser'
+        description='Translation model training parser'
     )
     parser.add_argument(
         '--s3-bucket-name', type=str, help='AWS S3 bucket name'
@@ -23,86 +28,77 @@ if __name__ == '__main__':
         '--role', type=str, help='AWS role'
     )
     parser.add_argument(
-        '--image-uri', type=str, help='Training image URI'
-    )
-    parser.add_argument(
-        '--image-ecr-uri', type=str, help='Training image ECR URI'
-    )
-    parser.add_argument(
         '--local', type=bool, default=False,
         help='Local mode execution'
-    )
-    parser.add_argument(
-        '--subnet-id1', type=str, help='Subnet id1'
-    )
-    parser.add_argument(
-        '--subnet-id2', type=str, help='Subnet id2'
-    )
-    parser.add_argument(
-        '--subnet-id3', type=str, help='Subnet id3'
-    )
-    parser.add_argument(
-        '--security-group-id', type=str, help='Security group id'
     )
 
     args = parser.parse_args()
     s3_bucket_name = args.s3_bucket_name
-    image_uri = args.image_uri
     local = args.local
 
+    aws_config_path = Path(__file__).resolve().parent.joinpath('aws_config.yml')
+    aws_config = yaml.safe_load(aws_config_path.read_text())
 
     if local:
         session = LocalPipelineSession()
         session.config = {'local': {'local_code': True}}
         role = args.role
-        instance_count = 1
-        instance_type = 'local'
+        for _, v in aws_config.items():
+            v['instance_type'] = 'local'
     else:
         session = PipelineSession()
         role = get_execution_role()
-        instance_count = 1
-        instance_type = 'ml.m5.large'
 
     # Data processing step
-    step_data_process, param_input_data = create_data_processing_step(
+    step_data_process = create_data_processing_step(
         session,
         role,
-        s3_bucket_name,
-        instance_count
+        **aws_config['data_processing_step']
     )
 
     # Training step
     train_data = step_data_process.properties.ProcessingOutputConfig.Outputs[
-        'train'
+        'train_data'
+    ].S3Output.S3Uri
+    tokenizers_path = step_data_process.properties.ProcessingOutputConfig.Outputs[
+        'tokenizers'
     ].S3Output.S3Uri
 
     step_train = create_training_step(
         session,
         role,
         s3_bucket_name,
-        instance_type,
-        instance_count,
-        train_data
+        train_data,
+        tokenizers_path,
+        **aws_config['training_step']
     )
 
     # Evaluation step
-    # TODO
+    valid_data = step_data_process.properties.ProcessingOutputConfig.Outputs[
+        'valid_data'
+    ].S3Output.S3Uri
+    model_path = step_train.properties.ModelArtifacts.S3ModelArtifacts
+    step_validation = create_validation_step(
+        session,
+        role,
+        valid_data,
+        model_path,
+        tokenizers_path,
+        **aws_config['validation_step']
+    )
 
     # Define the whole pipeline
     pipeline = Pipeline(
-        name='ShakespearePipeline',
-        parameters=[
-            param_input_data
-        ],
+        name='MachineTranslationPipeline3',
         steps=[
             step_data_process,
             step_train,
-            # step_eval
+            step_validation
         ],
         sagemaker_session=session
     )
     pipeline.upsert(
         role_arn=role,
-        description='shakespeare-pipeline'
+        description='translation-pipeline'
     )
     execution = pipeline.start()

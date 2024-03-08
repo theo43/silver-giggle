@@ -11,37 +11,33 @@ is where the code used on one hand to validate models during experiments, on the
 is tested and packaged. It is then only written once at a single place to avoid duplications.
 
 ## Experimenting
-### With a local Jupyter Lab
-Activate a Python 3.11 installation, then:
-```
-cd experiment/notebooks
-python -m venv venv-jup
-source ./venv-jup/bin/activate
-pip install -r requirements.txt
-```
-
-To link your venv to a Jupyter notebook kernel, run with your activated `venv-jup`:
-```
-python -m ipykernel install --user --name=venv-jup
-```
-You can then use that env in an activated Jupyter notebook. `/experiment/notebooks` contains notebooks for training/validating NLP models.
-
-### With a local Sagemaker
-```
-cd experiment/train
-docker build -t <train_image_name> .
-docker tag <train_image_name> <github_username>/<train_image_name>:latest
-docker login
-docker push <github_username>/<train_image_name>:latest
-python pipeline_train.py --s3-bucket-name <bucket_name> --role <role> --image-uri <github_username>/<train_image_name>:latest
-```
-Today it seems that local SageMaker training is impossible with custom Docker image since the docker-compose.yaml file generated on the run has a bad shared memory size (`shm_size`) value by default.
-
-### On AWS SageMaker
+### AWS setup
 Setup an AWS account, create a user, a role that can be assumed by the user and provide those credentials to GithubActions secrets for CI/CD.
 
+### Local Sagemaker
+You can verify that your pipeline runs well locally instead of doing it on expensive computes. To do so, with a Python 3.10 installation activated run:
+```
+cd experiment/train
+python -m venv venv
+source venv/bin/activate
+pip install sagemaker==2.204.0
+python pipeline_train.py --role <your_role> --local True
+```
+
+### On AWS SageMaker
+The run of pipelines on AWS is automated via Github Actions. See `./github/workflows/*`
+
 ## Packages
-TODO: describe how to test and build packages locally
+`packages` contains the code used to validate models during experiments and in production. It is tested and packaged to avoid duplications.
+
+```
+cd packages/<package_name>/src
+python -m venv venv
+source ./venv/bin/activate
+pip install -r requirements.txt
+python -m unittest discover
+
+```
 
 ## Production
 TODO: describe how to test, build and deploy the API locally
@@ -51,3 +47,6 @@ This repository is inspired by the following sources:
 - [KREUZBERGER, Dominik, KÜHL, Niklas, et HIRSCHL, Sebastian. Machine learning operations (mlops): Overview, definition, and architecture. IEEE Access, 2023.](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=10081336)
 - [Tensorflow tutorial for text generation using an RNN](https://www.tensorflow.org/text/tutorials/text_generation)
 - [Tensorflow tutorial for text translation using Transformers](https://www.tensorflow.org/text/tutorials/transformer)
+- https://www.youtube.com/watch?v=ISNdQcPhsts
+- https://github.com/hkproj/pytorch-transformer
+

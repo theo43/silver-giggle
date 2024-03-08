@@ -1,19 +1,15 @@
-import boto3
-import tensorflow as tf
-import numpy as np
+import torch
+import torch.nn as nn
 from pathlib import Path
 import os
 import argparse
-from shakespeare_model import (
-    ShakespeareModel, OneStepModel, generate_batch_dataset
-)
-import pickle
-
-
-SEQ_LENGTH = 100
-BATCH_SIZE = 64
-BUFFER_SIZE = 10000
-EPOCHS = 30
+from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
+import warnings
+from datasets import load_dataset
+from tokenizers import Tokenizer
+from translation.config import get_config
+from translation.model import get_model
 
 
 if __name__ == '__main__':
@@ -23,106 +19,123 @@ if __name__ == '__main__':
         default=os.environ['SM_CHANNEL_TRAINING']
     )
     parser.add_argument(
+        '--tokenizers', type=str,
+        default=os.environ['SM_CHANNEL_TOKENIZERS']
+    )
+    parser.add_argument(
         '--model_dir', type=str,
         default=os.environ['SM_MODEL_DIR']
     )
     args = parser.parse_args()
 
-    # Load train text data
-    train_data_path = str(Path(args.train) / 'train_text.txt')
-    text = open(train_data_path, 'rb').read().decode(
-        encoding='utf-8'
+    # Create config
+    config = get_config()
+    lang_src = config['lang_src']
+    lang_tgt = config['lang_tgt']
+
+    ds_raw = load_dataset(
+        'opus_books',
+        f'{lang_src}-{lang_tgt}',
+        split=f'train[:{config["download_size"]}%]'
     )
+
+    # Define device
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(f'Using device {device}')
+
+    # Load train dataloader and tokenizers
+    train_dataloader = torch.load(
+        str(Path(args.train) / 'train_dataloader.pkl'))
+    tokenizer_src = Tokenizer.from_file(
+        str(Path(args.tokenizers) / f'tokenizer_{lang_src}.json'))
+    tokenizer_tgt = Tokenizer.from_file(
+        str(Path(args.tokenizers) / f'tokenizer_{lang_tgt}.json'))
     
-    # Load vocabulary of the whole text
-    vocab_path = str(Path(args.train) / 'vocab.pkl')
-    with open(vocab_path, 'rb') as f:
-        vocab = pickle.load(f)
+    warnings.filterwarnings('ignore')
 
-    # Reduce data amount for smoke training
-    #text = text[:10000]
+    # Create model
+    model = get_model(
+        config,
+        tokenizer_src.get_vocab_size(),
+        tokenizer_tgt.get_vocab_size()
+    ).to(device)
 
-    # Get ids from chars and reversed
-    ids_from_chars = tf.keras.layers.StringLookup(
-        vocabulary=list(vocab), mask_token=None
-    )
-    chars_from_ids = tf.keras.layers.StringLookup(
-        vocabulary=ids_from_chars.get_vocabulary(),
-        invert=True, mask_token=None
-    )
+    # Tensorboard
+    writer = SummaryWriter(config['experiment_name'])
 
-    train_dataset_batch = generate_batch_dataset(
-        text=text,
-        ids_from_chars=ids_from_chars,
-        seq_length=SEQ_LENGTH,
-        buffer_size=BUFFER_SIZE,
-        batch_size=BATCH_SIZE
-    )
+    optimizer = torch.optim.Adam(model.parameters(), lr=config['lr'], eps=1e-9)
+    
+    initial_epoch = 0
+    global_step = 0
+    
+    loss_fn = nn.CrossEntropyLoss(
+        ignore_index=tokenizer_src.token_to_id('[PAD]'),
+        label_smoothing=0.1
+    ).to(device)
 
-    # Length of the vocabulary in StringLookup Layer
-    vocab_size = len(ids_from_chars.get_vocabulary())
+    for epoch in range(initial_epoch, config['num_epochs']):
+        model.train()
+        batch_iterator = tqdm(
+            train_dataloader,
+            desc=f'Processing epoch {epoch:02d}'
+        )
+        for batch in batch_iterator:
+            # (batch, seq_len)
+            encoder_input = batch['encoder_input'].to(device)
 
-    # The embedding dimension
-    embedding_dim = 256
+            # (batch, seq_len)
+            decoder_input = batch['decoder_input'].to(device)
 
-    # Number of RNN units
-    rnn_units = 1024
+            # (batch, 1, 1, seq_len)
+            encoder_mask = batch['encoder_mask'].to(device)
 
-    model = ShakespeareModel(
-        vocab_size=vocab_size,
-        embedding_dim=embedding_dim,
-        rnn_units=rnn_units
-    )
+            # (batch, 1, seq_len, seq_len)
+            decoder_mask = batch['decoder_mask'].to(device)
 
-    loss = tf.losses.SparseCategoricalCrossentropy(
-        from_logits=True
-    )
-    model.compile(optimizer='adam', loss=loss)
+            # Run the tensors through transformer
+            # (batch, seq_len, d_model)
+            encoder_output = model.encode(encoder_input, encoder_mask)
+            # (batch, seq_len, d_model)
+            decoder_output = model.decode(
+                encoder_output, encoder_mask, decoder_input, decoder_mask
+            )
+            # (batch, seq_len, tgt_vocab_size)
+            proj_output = model.project(decoder_output)
 
-    # Directory where the checkpoints will be saved
-    checkpoint_dir = './training_checkpoints'
-    # Name of the checkpoint files
-    checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt_{epoch}")
+            label = batch['label'].to(device)  # (batch, seq_len)
 
-    checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-        filepath=checkpoint_prefix,
-        save_weights_only=True
-    )
+            # (batch, seq_len, tgt_vocab_size)
+            # --> (batch * seq_len, tgt_vocab_size)
+            loss = loss_fn(
+                proj_output.view(-1, tokenizer_tgt.get_vocab_size()),
+                label.view(-1)
+            )
+            batch_iterator.set_postfix({'loss': f'{loss.item():6.3f}'})
 
-    history = model.fit(
-        train_dataset_batch,
-        epochs=EPOCHS,
-        callbacks=[checkpoint_callback]
-    )
+            # Log the loss
+            writer.add_scalar('train_loss', loss.item(), global_step)
+            writer.flush()
 
-    # Integrate it to final custom model
-    one_step_model = OneStepModel(
-        model=model,
-        chars_from_ids=chars_from_ids,
-        ids_from_chars=ids_from_chars
-    )
-    # Call build to initialize computational graph
-    for input_example, _ in train_dataset_batch.take(1):
-        one_step_model.build(input_example.shape)
-    print(one_step_model.summary())
+            # Back propagate the loss
+            loss.backward()
 
-    # Save it locally
-    model_local_path = f'{os.environ["SM_MODEL_DIR"]}/one_step_model.keras'
-    one_step_model.save(model_local_path)
+            # Update the weights
+            optimizer.step()
+            optimizer.zero_grad()
 
-    # Reload it to check it behaves as the saved one
-    one_step_model_loaded = tf.keras.models.load_model(model_local_path)
-    # Check that shape and all elements are equal
-    np.testing.assert_allclose(
-        one_step_model.model.predict(input_example),
-        one_step_model_loaded.model.predict(input_example)
-    )
+            global_step += 1
 
-    # Send model to S3
-    # TODO: do it later after model evaluation when we find way to calculate metrics
-    destination_path = 'models/estimator_models'
-    s3_client = boto3.client('s3')
-    bucket_name = args.model_dir.split('://')[1].split('/')[0]
-    s3_client.upload_file(
-        model_local_path, bucket_name, destination_path
-    )
+        # Save model
+        model_folder = f'{os.environ["SM_MODEL_DIR"]}/{config["model_folder"]})'
+        Path(model_folder).mkdir(parents=True, exist_ok=True)
+        model_local_path = f'{model_folder}/{config["model_filename"]}{epoch:02d}.pt'
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'global_step': global_step
+        }, model_local_path)
+
+        print(f'Model saved at {model_local_path}')
+
+    print('Training finished')
