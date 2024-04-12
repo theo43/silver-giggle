@@ -126,7 +126,7 @@ if __name__ == '__main__':
             global_step += 1
 
         # Save model
-        model_folder = f'{os.environ["SM_MODEL_DIR"]}/{config["model_folder"]})'
+        model_folder = f'{os.environ["SM_MODEL_DIR"]}/{config["model_folder"]}'
         Path(model_folder).mkdir(parents=True, exist_ok=True)
         model_local_path = f'{model_folder}/{config["model_filename"]}{epoch:02d}.pt'
         torch.save({
