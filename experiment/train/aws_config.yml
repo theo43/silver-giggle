@@ -5,7 +5,7 @@ data_processing_step:
 training_step:
   image_uri: 763104351884.dkr.ecr.eu-north-1.amazonaws.com/pytorch-training:2.2.0-gpu-py310-ubuntu20.04-sagemaker
   instance_count: 1
-  instance_type: ml.p2.xlarge
+  instance_type: ml.c5.xlarge
 validation_step:
   image_uri: 763104351884.dkr.ecr.eu-north-1.amazonaws.com/pytorch-training:2.2.0-cpu-py310-ubuntu20.04-sagemaker
   instance_count: 1
