@@ -20,7 +20,18 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.10.10
+      
+      - name: Test and build translation package
+        run: |
+          cd packages/translation/src
+          pip install --upgrade pip
+          pip install coverage==7.4.3 wheel==0.42.0 setuptools==65.5.0
+          pip install -r ../requirements.txt
+          coverage run -m unittest discover -s . -p 'test_*.py' && coverage report -m --fail-under=20
+          cd ..
+          python setup.py sdist bdist_wheel
+          cp dist/*.whl ../../production/.
       
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
