@@ -13,7 +13,6 @@ def create_validation_step(
     role: str,
     valid_data,
     model_path,
-    tokenizers_path,
     **kwargs
 ):
     base_path = Path(__file__).resolve().parent
@@ -47,11 +46,6 @@ def create_validation_step(
                 input_name='model',
                 source=model_path,
                 destination=f'{processing_path}/model'
-            ),
-            ProcessingInput(
-                input_name='tokenizers',
-                source=tokenizers_path,
-                destination=f'{processing_path}/tokenizers'
             )
         ],
         outputs=[

@@ -52,7 +52,7 @@ def greedy_decode(
 if __name__ == '__main__':
     processing_dir = '/opt/ml/processing'
     # TO BE DELETED
-    for i in Path(processing_dir / 'model').rglob('**/*'):
+    for i in (Path(processing_dir) / 'model').rglob('**/*'):
         print(i)
 
     # Create config
@@ -79,12 +79,8 @@ if __name__ == '__main__':
     valid_dataloader = torch.load(
         str(Path(processing_dir) / '/valid/valid_dataloader.pkl')
     )
-    tokenizer_src = Tokenizer.from_file(
-        str(Path(processing_dir) / f'/tokenizers/tokenizer_{lang_src}.json')
-    )
-    tokenizer_tgt = Tokenizer.from_file(
-        str(Path(processing_dir) / f'/tokenizers/tokenizer_{lang_tgt}.json')
-    )
+    tokenizer_src = model_checkpoint['tokenizer_src']
+    tokenizer_tgt = model_checkpoint['tokenizer_tgt']
 
     # Create model, load previously trained weights and set to eval mode
     model = get_model(
