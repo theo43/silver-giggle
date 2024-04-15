@@ -51,6 +51,9 @@ def greedy_decode(
 
 if __name__ == '__main__':
     processing_dir = '/opt/ml/processing'
+    # TO BE DELETED
+    for i in Path(processing_dir / 'model').rglob('**/*'):
+        print(i)
 
     # Create config
     config = get_config()
@@ -66,15 +69,11 @@ if __name__ == '__main__':
         f'{lang_src}-{lang_tgt}',
         split=f'train[:{config["download_size"]}%]'
     )
-    num_epochs = config['num_epochs']
-    if len(str(num_epochs)) == 1:
-        num_epochs_str = f'0{num_epochs - 1}'
-    elif len(str(num_epochs)) == 2:
-        num_epochs_str = f'{num_epochs - 1}'
 
+    num_epochs = config['num_epochs']
     # Load valid dataloader, tokenizers and model weights
     model_checkpoint = torch.load(
-        str(Path(processing_dir) / f'/model/weights/tmodel_{num_epochs_str}.pt'),
+        str(Path(processing_dir) / f'/model/weights/tmodel_{num_epochs-1:02d}.pt'),
         map_location=device
     )
     valid_dataloader = torch.load(
