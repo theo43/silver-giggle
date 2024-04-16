@@ -30,6 +30,7 @@ if __name__ == '__main__':
 
     # Create config
     config = get_config()
+    torch.manual_seed(config['seed'])
     lang_src = config['lang_src']
     lang_tgt = config['lang_tgt']
 

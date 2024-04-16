@@ -15,7 +15,8 @@ def get_config():
         'model_filename': 'tmodel_',
         'preload': None,
         'tokenizer_file': 'tokenizer_{0}.json',
-        'experiment_name': 'runs/tmodel'
+        'experiment_name': 'runs/tmodel',
+        'seed': 34
     }
 
 

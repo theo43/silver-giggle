@@ -52,18 +52,20 @@ def greedy_decode(
 
 if __name__ == '__main__':
     processing_dir = '/opt/ml/processing'
-    # TO BE DELETED
-    for i in (Path(processing_dir) / 'model').rglob('**/*'):
-        print(i)
 
     # Uncompress model
     with tarfile.open(
         str(Path(processing_dir) / 'model/model.tar.gz'), 'r:gz'
     ) as tar:
         tar.extractall(path=Path(processing_dir) / 'model')
+    
+    # TO BE DELETED
+    for i in (Path(processing_dir) / 'model').rglob('**/*'):
+        print(i)
 
     # Create config
     config = get_config()
+    torch.manual_seed(config['seed'])
     lang_src = config['lang_src']
     lang_tgt = config['lang_tgt']
     
