@@ -1,4 +1,5 @@
 import torch
+import tarfile
 from pathlib import Path
 from datasets import load_dataset
 from torchmetrics.text import BLEUScore, CharErrorRate, WordErrorRate
@@ -54,6 +55,12 @@ if __name__ == '__main__':
     # TO BE DELETED
     for i in (Path(processing_dir) / 'model').rglob('**/*'):
         print(i)
+
+    # Uncompress model
+    with tarfile.open(
+        str(Path(processing_dir) / 'model/model.tar.gz'), 'r:gz'
+    ) as tar:
+        tar.extractall(path=Path(processing_dir) / 'model')
 
     # Create config
     config = get_config()
