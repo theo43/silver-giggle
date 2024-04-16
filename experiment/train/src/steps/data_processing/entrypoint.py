@@ -80,7 +80,7 @@ if __name__ == '__main__':
     
     valid_path = f'{base_dir}/output/valid'
     Path(valid_path).mkdir(parents=True, exist_ok=True)
-    torch.save(train_dataloader, str(Path(valid_path) / 'valid_dataloader.pkl'))
+    torch.save(valid_dataloader, str(Path(valid_path) / 'valid_dataloader.pkl'))
     
     tokenizers_path = f'{base_dir}/output/tokenizers'
     Path(tokenizers_path).mkdir(parents=True, exist_ok=True)
