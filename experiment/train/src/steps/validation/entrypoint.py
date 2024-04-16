@@ -111,7 +111,8 @@ if __name__ == '__main__':
             encoder_input = batch['encoder_input'].to(device)
             encoder_mask = batch['encoder_mask'].to(device)
 
-            assert encoder_input.size(0) == 1, 'Batch size must be 1'
+            assert_msg = f'Batch size must be 1, not {encoder_input.size(0)}'
+            assert encoder_input.size(0) == 1, assert_msg
 
             model_output = greedy_decode(
                 model, encoder_input, encoder_mask, tokenizer_src,
