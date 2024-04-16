@@ -58,10 +58,6 @@ if __name__ == '__main__':
         str(Path(processing_dir) / 'model/model.tar.gz'), 'r:gz'
     ) as tar:
         tar.extractall(path=Path(processing_dir) / 'model')
-    
-    # TO BE DELETED
-    for i in (Path(processing_dir) / 'model').rglob('**/*'):
-        print(i)
 
     # Create config
     config = get_config()
