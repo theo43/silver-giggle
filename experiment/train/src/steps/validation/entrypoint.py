@@ -81,15 +81,15 @@ if __name__ == '__main__':
 
     num_epochs = config['num_epochs']
     # Load valid dataloader, tokenizers and model weights
-    model_checkpoint = torch.load(
-        str(Path(processing_dir) / f'/model/weights/tmodel_{num_epochs-1:02d}.pt'),
+    checkpoint = torch.load(
+        processing_dir + f'/model/weights/tmodel_{num_epochs-1:02d}.pt',
         map_location=device
     )
     valid_dataloader = torch.load(
-        str(Path(processing_dir) / '/valid/valid_dataloader.pkl')
+        processing_dir + '/valid/valid_dataloader.pkl'
     )
-    tokenizer_src = model_checkpoint['tokenizer_src']
-    tokenizer_tgt = model_checkpoint['tokenizer_tgt']
+    tokenizer_src = checkpoint['tokenizer_src']
+    tokenizer_tgt = checkpoint['tokenizer_tgt']
 
     # Create model, load previously trained weights and set to eval mode
     model = get_model(
@@ -97,7 +97,7 @@ if __name__ == '__main__':
         tokenizer_src.get_vocab_size(),
         tokenizer_tgt.get_vocab_size()
     ).to(device)
-    model.load_state_dict(model_checkpoint['model_state_dict'])
+    model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
 
     count = 0
