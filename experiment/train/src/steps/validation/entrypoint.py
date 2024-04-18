@@ -109,8 +109,12 @@ if __name__ == '__main__':
             assert encoder_input.size(0) == 1, assert_msg
 
             model_output = greedy_decode(
-                model, encoder_input, encoder_mask, tokenizer_src,
-                tokenizer_tgt, config['seq_len'], device
+                model,
+                encoder_input,
+                encoder_mask,
+                tokenizer_tgt,
+                config['seq_len'],
+                device
             )
 
             source_txt = batch['src_text'][0]
