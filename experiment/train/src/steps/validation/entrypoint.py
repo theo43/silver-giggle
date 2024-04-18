@@ -3,15 +3,13 @@ import tarfile
 from pathlib import Path
 from datasets import load_dataset
 from torchmetrics.text import BLEUScore, CharErrorRate, WordErrorRate
-from tokenizers import Tokenizer
 from translation.config import get_config
 from translation.model import get_model
 from translation.dataset import causal_mask
 
 
 def greedy_decode(
-    model, source, source_mask, tokenizer_src, tokenizer_tgt,
-    max_len, device
+    model, source, source_mask, tokenizer_tgt, max_len, device
 ):
     sos_id = tokenizer_tgt.token_to_id('[SOS]')
     eos_id = tokenizer_tgt.token_to_id('[EOS]')
