@@ -30,6 +30,7 @@ if __name__ == '__main__':
 
     # Create config
     config = get_config()
+    torch.manual_seed(config['seed'])
     lang_src = config['lang_src']
     lang_tgt = config['lang_tgt']
 
@@ -125,17 +126,19 @@ if __name__ == '__main__':
 
             global_step += 1
 
-        # Save model
-        model_folder = f'{os.environ["SM_MODEL_DIR"]}/{config["model_folder"]})'
-        Path(model_folder).mkdir(parents=True, exist_ok=True)
-        model_local_path = f'{model_folder}/{config["model_filename"]}{epoch:02d}.pt'
-        torch.save({
-            'epoch': epoch,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'global_step': global_step
-        }, model_local_path)
+    # Save model - last epoch
+    model_folder = f'{os.environ["SM_MODEL_DIR"]}/{config["model_folder"]}'
+    Path(model_folder).mkdir(parents=True, exist_ok=True)
+    model_local_path = f'{model_folder}/{config["model_filename"]}{epoch:02d}.pt'
+    torch.save({
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'global_step': global_step,
+        'tokenizer_src': tokenizer_src,
+        'tokenizer_tgt': tokenizer_tgt
+    }, model_local_path)
 
-        print(f'Model saved at {model_local_path}')
+    print(f'Model saved at {model_local_path}')
 
     print('Training finished')

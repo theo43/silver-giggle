@@ -83,7 +83,6 @@ if __name__ == '__main__':
         role,
         valid_data,
         model_path,
-        tokenizers_path,
         **aws_config['validation_step']
     )
 

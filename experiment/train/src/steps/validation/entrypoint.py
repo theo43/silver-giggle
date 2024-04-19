@@ -1,16 +1,15 @@
 import torch
+import tarfile
 from pathlib import Path
 from datasets import load_dataset
 from torchmetrics.text import BLEUScore, CharErrorRate, WordErrorRate
-from tokenizers import Tokenizer
 from translation.config import get_config
 from translation.model import get_model
 from translation.dataset import causal_mask
 
 
 def greedy_decode(
-    model, source, source_mask, tokenizer_src, tokenizer_tgt,
-    max_len, device
+    model, source, source_mask, tokenizer_tgt, max_len, device
 ):
     sos_id = tokenizer_tgt.token_to_id('[SOS]')
     eos_id = tokenizer_tgt.token_to_id('[EOS]')
@@ -52,8 +51,15 @@ def greedy_decode(
 if __name__ == '__main__':
     processing_dir = '/opt/ml/processing'
 
+    # Uncompress model
+    with tarfile.open(
+        str(Path(processing_dir) / 'model/model.tar.gz'), 'r:gz'
+    ) as tar:
+        tar.extractall(path=Path(processing_dir) / 'model')
+
     # Create config
     config = get_config()
+    torch.manual_seed(config['seed'])
     lang_src = config['lang_src']
     lang_tgt = config['lang_tgt']
     
@@ -67,20 +73,17 @@ if __name__ == '__main__':
         split=f'train[:{config["download_size"]}%]'
     )
 
+    num_epochs = config['num_epochs']
     # Load valid dataloader, tokenizers and model weights
-    model_checkpoint = torch.load(
-        str(Path(processing_dir) / '/model/weights/tmodel_02.pt'),
+    checkpoint = torch.load(
+        processing_dir + f'/model/weights/tmodel_{num_epochs-1:02d}.pt',
         map_location=device
     )
     valid_dataloader = torch.load(
-        str(Path(processing_dir) / '/valid/valid_dataloader.pkl')
+        processing_dir + '/valid/valid_dataloader.pkl'
     )
-    tokenizer_src = Tokenizer.from_file(
-        str(Path(processing_dir) / f'/tokenizers/tokenizer_{lang_src}.json')
-    )
-    tokenizer_tgt = Tokenizer.from_file(
-        str(Path(processing_dir) / f'/tokenizers/tokenizer_{lang_tgt}.json')
-    )
+    tokenizer_src = checkpoint['tokenizer_src']
+    tokenizer_tgt = checkpoint['tokenizer_tgt']
 
     # Create model, load previously trained weights and set to eval mode
     model = get_model(
@@ -88,7 +91,7 @@ if __name__ == '__main__':
         tokenizer_src.get_vocab_size(),
         tokenizer_tgt.get_vocab_size()
     ).to(device)
-    model.load_state_dict(model_checkpoint['model_state_dict'])
+    model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
 
     count = 0
@@ -102,11 +105,16 @@ if __name__ == '__main__':
             encoder_input = batch['encoder_input'].to(device)
             encoder_mask = batch['encoder_mask'].to(device)
 
-            assert encoder_input.size(0) == 1, 'Batch size must be 1'
+            assert_msg = f'Batch size must be 1, not {encoder_input.size(0)}'
+            assert encoder_input.size(0) == 1, assert_msg
 
             model_output = greedy_decode(
-                model, encoder_input, encoder_mask, tokenizer_src,
-                tokenizer_tgt, config['seq_len'], device
+                model,
+                encoder_input,
+                encoder_mask,
+                tokenizer_tgt,
+                config['seq_len'],
+                device
             )
 
             source_txt = batch['src_text'][0]

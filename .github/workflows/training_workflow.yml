@@ -43,6 +43,7 @@ jobs:
           python setup.py sdist bdist_wheel
           cp dist/*.whl ../../experiment/train/src/steps/data_processing/.
           cp dist/*.whl ../../experiment/train/src/steps/training/.
+          cp dist/*.whl ../../experiment/train/src/steps/validation/.
 
       - name: Install Dependencies
         run: |
