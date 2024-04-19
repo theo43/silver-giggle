@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy the requirements file to the working directory
 COPY ./production/requirements.txt .
+COPY ./production/translation-0.0.0-py3-none-any.whl .
 
 # Install the Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
