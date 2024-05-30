@@ -33,6 +33,7 @@ model.eval()
 
 @app.get("/")
 def predict(text: str):
+    print(f'Text to translate: {text}')
     result = model.translate(
         text,
         config,

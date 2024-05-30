@@ -11,6 +11,7 @@ class InputEmbeddings(nn.Module):
         self.embedding = nn.Embedding(vocab_size, d_model)
 
     def forward(self, x):
+        # (batch, seq_len) --> (batch, seq_len, d_model)
         return self.embedding(x) * math.sqrt(self.d_model)
 
 
@@ -300,7 +301,8 @@ class Transformer(nn.Module):
                     [tokenizer_src.token_to_id('[PAD]')] * nb_pad,
                     dtype=dtype
                 )
-            ], dim=0).to(device)
+            ], dim=0).to(device)  # (seq_len)
+            source = source.view(1, source.shape[0])  # (1, seq_len)
 
             source_mask = (
                 source != tokenizer_src.token_to_id('[PAD]')
@@ -312,10 +314,6 @@ class Transformer(nn.Module):
             decoder_input = torch.empty(1, 1).fill_(
                 tokenizer_tgt.token_to_id('[SOS]')
             ).type_as(source).to(device)
-
-            # Print source and target sentences start prompt
-            print(f"{f'SOURCE: ':>12}{sentence}")
-            print(f"{f'PREDICTED: ':>12}", end='')
 
             # Generate translation word by word
             while decoder_input.size(1) < seq_len:
