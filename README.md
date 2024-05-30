@@ -1,6 +1,7 @@
 # silver-giggle
 
 [![Training](https://github.com/theo43/silver-giggle/actions/workflows/training_workflow.yml/badge.svg)](https://github.com/theo43/silver-giggle/actions/workflows/training_workflow.yml)
+[![Production](https://github.com/theo43/silver-giggle/actions/workflows/production_workflow.yml/badge.svg)](https://github.com/theo43/silver-giggle/actions/workflows/production_workflow.yml)
 
 This project aims at using MLOps best practices to create, validate NLP models on the cloud, and productionize them with an API. 
 
